@@ -62,6 +62,16 @@ public class ShaderManager {
 	}
 	
 	/**
+	 * Destroys all managed shaders and cleans up the cache.
+	 */
+	public void destroy() {
+		for (Shader shader: shaderMap.values()) {
+			shader.destroy();
+		}
+		clear();
+	}
+	
+	/**
 	 * Cleans up the internal state of the object.
 	 * To be called when the EGL context has been reset.
 	 */

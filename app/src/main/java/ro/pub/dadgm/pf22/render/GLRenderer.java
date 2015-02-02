@@ -11,6 +11,8 @@ import javax.microedition.khronos.opengles.GL10;
  * 
  * <p>The actual drawing is done inside the {@link View} objects, which can be changed through the 
  * execution of the program using the {@link #setView} method. </p>
+ * 
+ * <p>All methods except the constructor and {@link #setView} should be called frm the OpenGL thread.</p>
  */
 public class GLRenderer implements GLSurfaceView.Renderer {
 	
@@ -32,13 +34,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 		// nothing to do
 	}
 	
-	public GLRenderer(View initialView) {
-		setView(initialView);
-	}
-	
 	
 	/**
 	 * Changes the current view.
+	 * 
+	 * <p>Must be called from the OpenGL thread! 
+	 * Use the {@link SurfaceView#setView(View)} method instead.</p>
 	 * 
 	 * @param view The new view to set.
 	 */

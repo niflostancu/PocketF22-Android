@@ -185,6 +185,7 @@ public class MainMenu implements View, Scene3D {
 		
 		// destroy the DrawText instance.
 		drawText.destroy();
+		shaderManager.destroy();
 	}
 	
 	@Override

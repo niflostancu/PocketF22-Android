@@ -202,6 +202,7 @@ public class GameScene implements View {
 		
 		// destroy the DrawText instance.
 		drawText.destroy();
+		shaderManager.destroy();
 	}
 	
 	@Override

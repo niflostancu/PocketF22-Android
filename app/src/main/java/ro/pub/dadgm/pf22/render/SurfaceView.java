@@ -61,12 +61,31 @@ public class SurfaceView extends android.opengl.GLSurfaceView {
 	
 	/**
 	 * Changes the current view.
+	 * 
+	 * <p>Can be called from the Activity thread.</p>
 	 *
 	 * @param view The new view object to set.
 	 */
 	public void setView(View view) {
-		currentView = view;
-		renderer.setView(view);
+		synchronized (this) {
+			currentView = view;
+		}
+		
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				renderer.setView(getCurrentView());
+			}
+		});
+	}
+
+	/**
+	 * Returns the current view.
+	 * 
+	 * @return The current View object to be drawn.
+	 */
+	public synchronized View getCurrentView() {
+		return currentView;
 	}
 	
 }
