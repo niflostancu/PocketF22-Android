@@ -13,6 +13,7 @@ import ro.pub.dadgm.pf22.render.ShaderManager;
 import ro.pub.dadgm.pf22.render.View;
 import ro.pub.dadgm.pf22.render.objects.Object3D;
 import ro.pub.dadgm.pf22.render.objects.ObjectsManager;
+import ro.pub.dadgm.pf22.render.objects.game.FighterJet3D;
 import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
@@ -36,7 +37,7 @@ public class GameScene implements View {
 		
 		@Override
 		public ShaderManager getShaderManager() {
-			return GameScene.this.shaderManager;
+			return GameScene.this.shaderManager3D;
 		}
 		
 		@Override
@@ -56,7 +57,7 @@ public class GameScene implements View {
 		
 		@Override
 		public ShaderManager getShaderManager() {
-			return GameScene.this.hudShaderManager;
+			return GameScene.this.shaderManagerHUD;
 		}
 		
 		@Override
@@ -66,11 +67,19 @@ public class GameScene implements View {
 	}
 	
 	/**
-	 * The list of shaders to register (used by this view).
+	 * The list of HUD shaders to register.
 	 */
-	protected static final Object[][] REGISTER_SHADERS = {
-			{ "simple_tex", R.raw.simple_tex_v, R.raw.simple_tex_f }, 
+	protected static final Object[][] REGISTER_SHADERS_HUD = {
 			{ "draw_text", R.raw.draw_text_v, R.raw.draw_text_f }
+	};
+	
+	/**
+	 * The list of 3D shaders to register.
+	 */
+	protected static final Object[][] REGISTER_SHADERS_3D = {
+			{ "simple_tex", R.raw.simple_tex_v, R.raw.simple_tex_f },
+			{ "s3d_simple_ilum", R.raw.s3d_simple_ilum_v, R.raw.s3d_simple_ilum_f },
+			{ "s3d_simple_color", R.raw.s3d_simple_color_v, R.raw.s3d_simple_color_f },
 	};
 	
 	/**
@@ -109,14 +118,14 @@ public class GameScene implements View {
 	protected ObjectsManager<HUDObject> hudObjects;
 	
 	/**
-	 * The shader manager used for this view.
+	 * The shader manager used for the 3D scene.
 	 */
-	protected ShaderManager shaderManager;
+	protected ShaderManager shaderManager3D;
 	
 	/**
 	 * The shader manager used for the HUD objects.
 	 */
-	protected ShaderManager hudShaderManager;
+	protected ShaderManager shaderManagerHUD;
 	
 	/**
 	 * The text drawing library used for the HUD objects.
@@ -150,12 +159,15 @@ public class GameScene implements View {
 		
 		// initialize the objects manager
 		objects = new ObjectsManager<>();
+		hudObjects = new ObjectsManager<>();
 		
 		// initialize the camera object with the identity view and projection
 		camera = new Camera();
+		hudCamera = new Camera();
 		
 		// initialize the shader manager
-		shaderManager = new ShaderManager();
+		shaderManager3D = new ShaderManager();
+		shaderManagerHUD = new ShaderManager();
 		
 		// draw text library
 		drawText = new DrawText(gameHUD);
@@ -170,21 +182,30 @@ public class GameScene implements View {
 		ShaderLoader.clear();
 		TextureLoader.clear();
 		objects.clear();
-		shaderManager.clear();
+		shaderManager3D.clear();
+		shaderManagerHUD.clear();
 		drawText.destroy();
 		
 		// initialize the shaders
-		for (Object[] shaderProps: REGISTER_SHADERS) {
+		for (Object[] shaderProps: REGISTER_SHADERS_3D) {
 			String name = (String)shaderProps[0];
 			Integer vertexRes = (Integer)shaderProps[1];
 			Integer fragmentRes = (Integer)shaderProps[2];
 			
-			shaderManager.registerShader(name, vertexRes, fragmentRes);
+			shaderManager3D.registerShader(name, vertexRes, fragmentRes);
+		}
+		for (Object[] shaderProps: REGISTER_SHADERS_HUD) {
+			String name = (String)shaderProps[0];
+			Integer vertexRes = (Integer)shaderProps[1];
+			Integer fragmentRes = (Integer)shaderProps[2];
+			
+			shaderManagerHUD.registerShader(name, vertexRes, fragmentRes);
 		}
 		
 		// initialize the scene objects
+		FighterJet3D testJet = new FighterJet3D(gameScene3D, "fighter", 0);
 		
-		
+		objects.add(testJet);
 	}
 	
 	@Override
@@ -202,7 +223,8 @@ public class GameScene implements View {
 		
 		// destroy the DrawText instance.
 		drawText.destroy();
-		shaderManager.destroy();
+		shaderManager3D.destroy();
+		shaderManagerHUD.destroy();
 	}
 	
 	@Override
@@ -211,6 +233,7 @@ public class GameScene implements View {
 		
 		// draw the objects
 		objects.drawAll();
+		hudObjects.drawAll();
 	}
 	
 	@Override
@@ -222,15 +245,26 @@ public class GameScene implements View {
 		
 		synchronized (lock) {
 			camera.setViewportDims(width, height);
+			hudCamera.setViewportDims(width, height);
 			
-			Matrix.orthoM(camera.getProjectionMatrix(), 0,
+			Matrix.setLookAtM(camera.getViewMatrix(), 0,
+					1, 2, -5, 
+					0f, 0f, 0, 
+					0f, 1.0f, 0.0f );
+			
+			Matrix.frustumM(camera.getProjectionMatrix(), 0,
+					-ratio, ratio, -1f, 1f, 1f, 50f );
+			
+			Matrix.orthoM(hudCamera.getProjectionMatrix(), 0,
 				/*left: */ 0, /*right: */ vWidth, 
 				/*bottom: */ 0, /*top: */ 10f, 
 				/*near: */ 0, /*far: */ -10);
 			
-			camera.computeReverseMatrix();
+			// camera.computeReverseMatrix(); -- not needed
+			hudCamera.computeReverseMatrix();
 			
-			shaderManager.notifyCameraChanged(camera);
+			shaderManager3D.notifyCameraChanged(camera);
+			shaderManagerHUD.notifyCameraChanged(hudCamera);
 		}
 	}
 	

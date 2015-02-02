@@ -26,6 +26,11 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 	 */
 	protected View currentView = null;
 	
+	/**
+	 * The current viewport width and height.
+	 */
+	protected int width = -1, height;
+	
 	
 	/**
 	 * Default constructor.
@@ -49,8 +54,12 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 		}
 		currentView = view;
 		
-		if (surfaceCreated)
+		if (surfaceCreated) {
 			view.onActivate();
+		}
+		if (width != -1) {
+			view.onResize(width, height);
+		}
 	}
 	
 	@Override
@@ -76,6 +85,8 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 	
 	@Override
 	public void onSurfaceChanged(GL10 unused, int width, int height) {
+		this.width = width;
+		this.height = height;
 		if (currentView != null) {
 			currentView.onResize(width, height);
 		}

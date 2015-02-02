@@ -106,6 +106,18 @@ public class Camera {
 		Matrix.invertM(reverseMatrix, 0, tmpMatrix, 0);
 	}
 	
+	/**
+	 * Computes the normal matrix (MV^-1)^t.
+	 */
+	public float[] computeNormalMatrix(float[] modelMatrix) {
+		float[] tmpMatrix = new float[16];
+		float[] tmp2Matrix = new float[16];
+		Matrix.multiplyMM(tmpMatrix, 0, viewMatrix, 0, modelMatrix, 0);
+		Matrix.invertM(tmp2Matrix, 0, tmpMatrix, 0);
+		Matrix.transposeM(tmpMatrix, 0, tmp2Matrix, 0);
+		
+		return tmpMatrix;
+	}
 	
 	// getters / setters
 	
