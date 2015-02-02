@@ -62,6 +62,11 @@ public class MTLParser {
 					if (currentMtl == null) continue;
 					String[] str = line.split("[ ]+");
 					currentMtl.setTextureFile(str[1]);
+					
+				} else if (line.startsWith("map_Kd")) {
+					if (currentMtl == null) continue;
+					String[] str = line.split("[ ]+");
+					currentMtl.setTextureFile(str[1]);
 				}
 			}
 			

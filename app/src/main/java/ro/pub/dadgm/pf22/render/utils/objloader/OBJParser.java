@@ -33,6 +33,7 @@ public class OBJParser {
 	
 	public TDModel parseOBJ(InputStream inStream, InputStream mtlStream) {
 		Material m = null;
+		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
 		String line;
 		
@@ -57,13 +58,13 @@ public class OBJParser {
 						TDModelPart model = new TDModelPart(aFaces, aVTPointer, aVNPointer, m);
 						parts.add(model);
 					}
+					faces.clear();
+					vtPointer.clear();
+					vnPointer.clear();
 					
 				} else if(line.startsWith("usemtl")){
 					String mtlName = line.split("[ ]+", 2)[1]; // the name of the material
 					m = materials.get(mtlName);
-					faces.clear();
-					vtPointer.clear();
-					vnPointer.clear();
 					
 				} else if (line.startsWith("mtllib")) {
 					materials = MTLParser.loadMTL(mtlStream);

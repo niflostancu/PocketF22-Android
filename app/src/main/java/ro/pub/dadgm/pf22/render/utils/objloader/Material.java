@@ -1,6 +1,10 @@
 package ro.pub.dadgm.pf22.render.utils.objloader;
 
 
+import android.opengl.GLES20;
+
+import ro.pub.dadgm.pf22.render.utils.TextureLoader;
+
 /**
  * Defines an object's materials (textures / colors).
  * 
@@ -47,10 +51,16 @@ public class Material {
 	 * The name of the texture file.
 	 */
 	protected String textureFile;
+
+	/**
+	 * Stores the loaded OpenGL texture handle, if any.
+	 */
+	protected int glTexture = 0;
 	
 	
 	public Material(String name) {
 		this.name = name;
+		this.alpha = 1;
 	}
 	
 	public String getName() {
@@ -59,6 +69,30 @@ public class Material {
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * Loads/returns the cached texture for the current material.
+	 * 
+	 * @param rootPath The root asset path of the model to search into.
+	 * @return The loaded texture's GL handle if successful. Returns -1 if there is no texture defined.
+	 */
+	public int loadTexture(String rootPath) {
+		if (textureFile == null || textureFile.isEmpty())
+			return -1;
+		
+		if (glTexture == 0) {
+			glTexture = TextureLoader.loadTextureFromAsset(rootPath + textureFile);
+			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
+		}
+		
+		if (glTexture == 0)
+			throw new RuntimeException("Unable to load the texture file '" + textureFile + "'!");
+		
+		return glTexture;
 	}
 	
 	@SuppressWarnings("unused")

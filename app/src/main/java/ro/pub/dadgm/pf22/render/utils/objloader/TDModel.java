@@ -1,6 +1,8 @@
 package ro.pub.dadgm.pf22.render.utils.objloader;
 
 import java.nio.FloatBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import ro.pub.dadgm.pf22.render.utils.BufferUtils;
 
@@ -44,7 +46,7 @@ public class TDModel {
 	/**
 	 * A buffer for the texture coordinates.
 	 */
-	protected FloatBuffer textureCoordsBuf;
+	protected Map<Material, FloatBuffer> textureCoordsBuf;
 	
 	
 	/**
@@ -64,7 +66,7 @@ public class TDModel {
 		this.parts = parts;
 		
 		// compute vertex normals buffer from the parts
-		float[] vNormals = new float[v.length];
+		float[] vNormals = new float[numVertices() * 3];
 		for (TDModelPart part: parts) {
 			for (int i=0; i<part.vnPointer.length; i++) {
 				short j = part.vnPointer[i];
@@ -76,24 +78,38 @@ public class TDModel {
 		}
 		
 		// aggregate the texture coordinates from the parts
-		float[] vTextureCoords = new float[v.length];
+		Map<Material, float[]> vTextureCoordsMap = new HashMap<>();
 		for (TDModelPart part: parts) {
+			Material mat = part.getMaterial();
+			if (mat == null)
+				continue;
+			
+			if (!vTextureCoordsMap.containsKey(mat)) {
+				vTextureCoordsMap.put(mat, new float[numVertices() * 2]);
+			}
+			float[] vTextureCoords = vTextureCoordsMap.get(mat);
+			
 			for (int i=0; i<part.vtPointer.length; i++) {
 				short j = part.vtPointer[i];
 				short k = part.faces[i];
+				
 				vTextureCoords[2*k] = vt[2*j];
 				vTextureCoords[2*k+1] = vt[2*j+1];
-				vTextureCoords[2*k+2] = vt[2*j+2];
 			}
 		}
 		
 		// initialize nio buffers
 		vertexBuf = BufferUtils.asBuffer(v);
 		normalBuf = BufferUtils.asBuffer(vNormals);
-		textureCoordsBuf = BufferUtils.asBuffer(vTextureCoords);
 		vertexBuf.position(0);
 		normalBuf.position(0);
-		textureCoordsBuf.position(0);
+		
+		textureCoordsBuf = new HashMap<>();
+		for (Map.Entry<Material, float[]> texCoordsEntry: vTextureCoordsMap.entrySet()) {
+			FloatBuffer buf = BufferUtils.asBuffer(texCoordsEntry.getValue());
+			textureCoordsBuf.put(texCoordsEntry.getKey(), buf);
+			buf.position(0);
+		}
 	}
 
 	/**
@@ -103,7 +119,7 @@ public class TDModel {
 	 */
 	@SuppressWarnings("unused")
 	public int numVertices() {
-		return v.length;
+		return v.length / 3;
 	}
 	
 	/**
@@ -163,13 +179,14 @@ public class TDModel {
 	}
 	
 	/**
-	 * Returns the vertex texture coordinates buffer.
+	 * Returns the vertex texture coordinates buffer for a specific part.
 	 * 
+	 * @param material The material to return the buffer for.
 	 * @return The texture coordinates buffer.
 	 */
 	@SuppressWarnings("unused")
-	public FloatBuffer getTextureCoordsBuf() {
-		return textureCoordsBuf;
+	public FloatBuffer getTextureCoordsBuf(Material material) {
+		return textureCoordsBuf.get(material);
 	}
 	
 	/**

@@ -70,6 +70,7 @@ public class GameScene implements View {
 	 * The list of HUD shaders to register.
 	 */
 	protected static final Object[][] REGISTER_SHADERS_HUD = {
+			{ "simple_tex", R.raw.simple_tex_v, R.raw.simple_tex_f },
 			{ "draw_text", R.raw.draw_text_v, R.raw.draw_text_f }
 	};
 	
@@ -77,9 +78,8 @@ public class GameScene implements View {
 	 * The list of 3D shaders to register.
 	 */
 	protected static final Object[][] REGISTER_SHADERS_3D = {
-			{ "simple_tex", R.raw.simple_tex_v, R.raw.simple_tex_f },
-			{ "s3d_simple_ilum", R.raw.s3d_simple_ilum_v, R.raw.s3d_simple_ilum_f },
-			{ "s3d_simple_color", R.raw.s3d_simple_color_v, R.raw.s3d_simple_color_f },
+			{ "s3d_tex_phong", R.raw.s3d_tex_phong_v, R.raw.s3d_tex_phong_f },
+			{ "s3d_simple_ilum", R.raw.s3d_simple_ilum_v, R.raw.s3d_simple_ilum_f }
 	};
 	
 	/**
