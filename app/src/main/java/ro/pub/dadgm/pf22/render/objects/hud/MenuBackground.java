@@ -7,6 +7,7 @@ import java.nio.FloatBuffer;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.render.Camera;
+import ro.pub.dadgm.pf22.render.utils.BufferUtils;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
 
@@ -82,8 +83,8 @@ public class MenuBackground extends HUDObject {
 			throw new RuntimeException("The 'simple_tex' shader program could not be loaded!");
 		
 		// initialize the object's geometry
-		vertexBuffer = allocateBuffer(staticVertexArray);
-		vertexIndexBuffer = allocateBuffer(staticIndexArray);
+		vertexBuffer = BufferUtils.asBuffer(staticVertexArray);
+		vertexIndexBuffer = BufferUtils.asBuffer(staticIndexArray);
 		
 		// load the menu background as a texture
 		// texture = TextureLoader.loadTextureFromAsset("menu_background.png");
@@ -93,7 +94,7 @@ public class MenuBackground extends HUDObject {
 		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
 		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
 		
-		textureCoordsBuf = allocateBuffer(staticTextureCoords);
+		textureCoordsBuf = BufferUtils.asBuffer(staticTextureCoords);
 		
 		if (texture == 0) 
 			throw new RuntimeException("Unable to load the background texture!");

@@ -96,41 +96,6 @@ public abstract class AbstractObject3D implements Object3D {
 	}
 	
 	
-	// utility methods
-
-	/**
-	 * Initializes a FloatBuffer from a float[] array.
-	 * 
-	 * @param data The float[] array to use for filling the buffer.
-	 */
-	protected FloatBuffer allocateBuffer(float[] data) {
-		FloatBuffer floatBuf = ByteBuffer
-				.allocateDirect(data.length * 4) // float == 4 bytes
-				.order(ByteOrder.nativeOrder())
-				.asFloatBuffer();
-		floatBuf.put(data);
-		floatBuf.position(0);
-		
-		return floatBuf;
-	}
-	
-	/**
-	 * Initializes a ShortBuffer from a short[] array.
-	 *
-	 * @param data The short[] array to use for filling the buffer.
-	 */
-	protected ShortBuffer allocateBuffer(short[] data) {
-		ShortBuffer shortBuf = ByteBuffer
-				.allocateDirect(data.length * 4) // short == 2 bytes
-				.order(ByteOrder.nativeOrder())
-				.asShortBuffer();
-		shortBuf.put(data);
-		shortBuf.position(0);
-		
-		return shortBuf;
-	}
-	
-	
 	// getters and setters
 	
 	/**
