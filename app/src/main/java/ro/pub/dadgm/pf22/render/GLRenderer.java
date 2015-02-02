@@ -7,10 +7,13 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Handles OpenGL rendering.
+ * Implements the {@link android.opengl.GLSurfaceView.Renderer} interface.
+ * 
+ * <p>The actual drawing is done inside the {@link View} objects, which can be changed through the 
+ * execution of the program using the {@link #setView} method. </p>
  */
 public class GLRenderer implements GLSurfaceView.Renderer {
-
+	
 	/**
 	 * Whether the GL surface has been initialized.
 	 */
@@ -21,16 +24,18 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 	 */
 	protected View currentView = null;
 	
+	
 	/**
 	 * Default constructor.
 	 */
-	public void GLRenderer() {
+	public GLRenderer() {
 		// nothing to do
 	}
 	
-	public void GLRenderer(View initialView) {
+	public GLRenderer(View initialView) {
 		setView(initialView);
 	}
+	
 	
 	/**
 	 * Changes the current view.
@@ -50,7 +55,16 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
 		// Set the background frame color
-		GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		
+		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+		GLES20.glDepthFunc(GLES20.GL_LEQUAL);
+		
+		GLES20.glEnable(GLES20.GL_CULL_FACE);
+		GLES20.glCullFace(GLES20.GL_BACK);
+		
+		GLES20.glEnable(GLES20.GL_BLEND);
+		GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		
 		surfaceCreated = true;
 		
@@ -69,7 +83,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
 	
 	@Override
 	public void onDrawFrame(GL10 unused) {
-		
 		// draw background
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 		

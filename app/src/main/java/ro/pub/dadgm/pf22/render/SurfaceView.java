@@ -1,11 +1,14 @@
 package ro.pub.dadgm.pf22.render;
 
 import android.content.Context;
+import android.graphics.PixelFormat;
+import android.opengl.GLSurfaceView;
 
 import ro.pub.dadgm.pf22.R;
 
 /**
- * Extends GLSurfaceView and handles view objects rendering.
+ * Sets up the OpenGL ES 2.0 drawing context and sets the accompanying {@link GLRenderer} class as 
+ * the renderer.
  */
 public class SurfaceView extends android.opengl.GLSurfaceView {
 
@@ -19,6 +22,7 @@ public class SurfaceView extends android.opengl.GLSurfaceView {
 	 */
 	protected GLRenderer renderer;
 	
+	
 	/**
 	 * SurfaceView constructor.
 	 * 
@@ -27,12 +31,16 @@ public class SurfaceView extends android.opengl.GLSurfaceView {
 	public SurfaceView(Context context) {
 		super(context);
 		
+		getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		
 		// Create an OpenGL ES 2.0 context.
 		setEGLContextClientVersion(2);
+		// setEGLConfigChooser(4,4,4,8,16,0);
 		
 		// Set the Renderer for drawing on the GLSurfaceView
 		renderer = new GLRenderer();
 		setRenderer(renderer);
+		setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 	}
 	
 	/**

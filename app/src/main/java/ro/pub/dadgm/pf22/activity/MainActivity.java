@@ -1,17 +1,19 @@
 package ro.pub.dadgm.pf22.activity;
 
+import android.app.Activity;
 import android.content.Context;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.render.SurfaceView;
 import ro.pub.dadgm.pf22.render.View;
 import ro.pub.dadgm.pf22.render.views.MainMenu;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 	
 	/**
 	 * The view class for the game's main menu.
@@ -27,6 +29,9 @@ public class MainActivity extends ActionBarActivity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		
 		super.onCreate(savedInstanceState);
 		
 		appContext = getApplicationContext();
@@ -39,10 +44,22 @@ public class MainActivity extends ActionBarActivity {
 	}
 	
 	@Override
+	protected void onPause() {
+		super.onPause();
+		surfaceView.onPause();
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		surfaceView.onResume();
+	}
+	
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu_main, menu);
-		return true;
+		// getMenuInflater().inflate(R.menu.menu_main, menu);
+		return false;
 	}
 	
 	@Override
