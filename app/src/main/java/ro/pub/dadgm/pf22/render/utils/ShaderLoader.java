@@ -2,6 +2,7 @@ package ro.pub.dadgm.pf22.render.utils;
 
 import android.content.Context;
 import android.opengl.GLES20;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,12 +57,23 @@ public class ShaderLoader {
 		
 		int shader = GLES20.glCreateShader(type);
 		if (shader == 0) {
+			Log.w("ShaderLoader", "Shader allocation failed! GL error: " + GLES20.glGetError());
 			return 0;
 		}
 		
 		// add the source code to the shader and compile it
 		GLES20.glShaderSource(shader, shaderCode);
 		GLES20.glCompileShader(shader);
+		
+		// check if the compilation succeeded
+		final int[] compileStatus = new int[1];
+		GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
+		if (compileStatus[0] == 0) {
+			Log.w("ShaderLoader", GLES20.glGetShaderInfoLog(shader));
+			Log.w("ShaderLoader", "GL error: " + GLES20.glGetError());
+			GLES20.glDeleteShader(shader);
+			return 0;
+		}
 		
 		// add it to the cache
 		shaderCache.put(cacheKey, shader);
@@ -74,9 +86,10 @@ public class ShaderLoader {
 	 * 
 	 * @param vertexResource The android resource ID for the vertex shader code.
 	 * @param fragmentResource The android resource ID for the fragment shader code.
+	 * @param bindAttributes A list of attributes to bind. Null to disable binding.   
 	 * @return A GL program identifier if successful, 0 otherwise.
 	 */
-	public static int createProgram(int vertexResource, int fragmentResource) {
+	public static int createProgram(int vertexResource, int fragmentResource, String[] bindAttributes) {
 		int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexResource);
 		int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentResource);
 		
@@ -92,18 +105,82 @@ public class ShaderLoader {
 		
 		int program = GLES20.glCreateProgram();
 		if (program == 0) {
+			Log.w("ShaderLoader", "Program allocation failed! GL error: " + GLES20.glGetError());
 			return 0; // error
 		}
 		
 		// link the two shaders into a program
 		GLES20.glAttachShader(program, vertexShader);
 		GLES20.glAttachShader(program, fragmentShader);
+		
+		if (bindAttributes != null) {
+			for (int i=0; i<bindAttributes.length; i++) {
+				if (bindAttributes[i] != null)
+					GLES20.glBindAttribLocation(program, i, bindAttributes[i]);
+			}
+		}
+		
 		GLES20.glLinkProgram(program);
+		
+		// check if link succeeded
+		final int[] linkStatus = new int[1];
+		GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
+		if (linkStatus[0] == 0) {
+			Log.w("ShaderLoader", GLES20.glGetProgramInfoLog(program));
+			Log.w("ShaderLoader", "Program link failed! GL error: " + GLES20.glGetError());
+			GLES20.glDeleteProgram(program);
+			return 0;
+		}
 		
 		// add it to the cache
 		shaderCache.put(cacheKey, program);
 		
 		return program;
+	}
+
+	/**
+	 * Deletes the specified vertex / fragment shaders from OpenGL.
+	 * Use 0 to ignore an argument.
+	 * 
+	 * <p>If both are specified, the program that links them together is also deleted.</p>
+	 * 
+	 * @param vertexResource The android resource ID for the vertex shader code.
+	 * @param fragmentResource The android resource ID for the fragment shader code.
+	 * @return True if all of them were deleted, false otherwise.
+	 */
+	public static boolean deleteShaders(int vertexResource, int fragmentResource) {
+		boolean success = true;
+		
+		int vertexShader = 0;
+		int fragmentShader = 0;
+		String cacheKey = "shad_" + GLES20.GL_VERTEX_SHADER + "_" + vertexResource;
+		if (vertexResource !=0  && shaderCache.containsKey(cacheKey)) {
+			vertexShader = shaderCache.get(cacheKey);
+			GLES20.glDeleteShader(vertexShader);
+			shaderCache.remove(cacheKey);
+		} else if (vertexResource != 0) {
+			success = false;
+		}
+		
+		cacheKey = "shad_" + GLES20.GL_FRAGMENT_SHADER + "_" + fragmentResource;
+		if (fragmentResource !=0  && shaderCache.containsKey(cacheKey)) {
+			fragmentShader = shaderCache.get(cacheKey);
+			GLES20.glDeleteShader(fragmentShader);
+			shaderCache.remove(cacheKey);
+		} else if (fragmentResource != 0) {
+			success = false;
+		}
+		
+		if (vertexShader !=0 && fragmentShader !=0) {
+			// delete the program, too
+			cacheKey = "prog_" + vertexShader + "_" + fragmentShader;
+			if (shaderCache.containsKey(cacheKey)) {
+				int program = shaderCache.get(cacheKey);
+				GLES20.glDeleteProgram(program);
+			} else success = false;
+		}
+		
+		return success;
 	}
 
 	/**
