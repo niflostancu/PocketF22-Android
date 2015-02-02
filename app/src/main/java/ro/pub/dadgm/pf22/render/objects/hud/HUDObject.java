@@ -1,6 +1,6 @@
 package ro.pub.dadgm.pf22.render.objects.hud;
 
-import ro.pub.dadgm.pf22.render.Camera;
+import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.objects.AbstractObject3D;
 import ro.pub.dadgm.pf22.utils.Point3D;
 
@@ -28,14 +28,13 @@ public abstract class HUDObject extends AbstractObject3D {
 	/**
 	 * The constructor with mandatory parameters.
 	 * 
+	 * @param scene The parent scene object.
 	 * @param tag The object's tag.
 	 * @param priority The object's priority.
-	 * @param camera Reference to the camera object to use.
 	 */
-	public HUDObject(String tag, int priority, Camera camera) {
-		super(tag, priority);
+	public HUDObject(Scene3D scene, String tag, int priority) {
+		super(scene, tag, priority);
 		this.position = new Point3D();
-		this.camera = camera;
 	}
 	
 	

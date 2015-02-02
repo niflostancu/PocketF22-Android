@@ -5,16 +5,33 @@ import android.opengl.Matrix;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.render.Camera;
+import ro.pub.dadgm.pf22.render.Scene3D;
+import ro.pub.dadgm.pf22.render.ShaderManager;
 import ro.pub.dadgm.pf22.render.View;
 import ro.pub.dadgm.pf22.render.objects.ObjectsManager;
 import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
 import ro.pub.dadgm.pf22.render.objects.hud.MenuBackground;
-import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
+import ro.pub.dadgm.pf22.render.objects.hud.MenuTitle;
+import ro.pub.dadgm.pf22.render.utils.DrawText;
 
 /**
  * The view for the game's main menu.
+ * 
+ * <p>The view is a 2D scene that contains a background image, and several menu buttons and texts.</p>
+ * 
+ * <p>The world space is x=[0, 10], y=[0, 10]. Its objects will be scaled so that the value of the 
+ * largest screen dimension is 10.</p>
  */
-public class MainMenu implements View {
+public class MainMenu implements View, Scene3D {
+	
+	
+	/**
+	 * The list of shaders to register (used by this view).
+	 */
+	protected static final Object[][] REGISTER_SHADERS = {
+			{ "simple_tex", R.raw.simple_tex_v, R.raw.simple_tex_f }, 
+			{ "draw_text", R.raw.draw_text_v, R.raw.draw_text_f }
+	};
 	
 	/**
 	 * The camera used for the menu.
@@ -27,9 +44,14 @@ public class MainMenu implements View {
 	protected ObjectsManager<HUDObject> objects;
 	
 	/**
-	 * Shader references.
+	 * The shader manager used for this view.
 	 */
-	protected int simpleTexShader;
+	protected ShaderManager shaderManager;
+
+	/**
+	 * The text drawing library.
+	 */
+	protected DrawText drawText;
 	
 	
 	/**
@@ -41,15 +63,50 @@ public class MainMenu implements View {
 		
 		// initialize the camera object with the identity view and projection
 		camera = new Camera();
+		
+		// initialize the shader manager
+		shaderManager = new ShaderManager();
+		
+		// draw text library
+		drawText = new DrawText(this);
 	}
-	
+
+	/**
+	 * Build the main menu scene.
+	 */
 	@Override
 	public void onActivate() {
-		// add the background objects
-		objects.add(new MenuBackground("background", 0, camera));
 		
 		// initialize the shaders
-		simpleTexShader = ShaderLoader.createProgram(R.raw.simple_tex_v, R.raw.simple_tex_f, null);
+		for (Object[] shaderProps: REGISTER_SHADERS) {
+			String name = (String)shaderProps[0];
+			Integer vertexRes = (Integer)shaderProps[1];
+			Integer fragmentRes = (Integer)shaderProps[2];
+
+			shaderManager.registerShader(name, vertexRes, fragmentRes);
+		}
+		
+		final Object[][] sceneObjects = new Object[][]{
+				// { object, position, size }
+				{ new MenuBackground(this, "background", 0), new float[]{ 0, 0, 9.9f }, new float[]{ 10, 10 } },
+				{ new MenuTitle(this, "text", 0), new float[]{ 2f, 8f, 5f }, new float[]{ 0, 1 } }, 
+		};
+		
+		// add the background objects
+		for (Object[] objProps: sceneObjects) {
+			HUDObject hudObject = (HUDObject)objProps[0];
+			if (objProps.length > 1) {
+				float[] position = (float[]) objProps[1];
+				hudObject.position().setCoordinates(position[0], position[1], position[2]);
+			}
+			if (objProps.length > 2) {
+				float[] size = (float[]) objProps[2];
+				hudObject.setDimensions(size[0], size[1]);
+			}
+			
+			objects.add(hudObject);
+		}
+		
 	}
 	
 	@Override
@@ -59,6 +116,9 @@ public class MainMenu implements View {
 			obj.destroy();
 		}
 		objects.clear();
+		
+		// destroy the DrawText instance.
+		drawText.destroy();
 	}
 	
 	@Override
@@ -76,31 +136,33 @@ public class MainMenu implements View {
 		// Create a new perspective projection matrix. The height will stay the same
 		// while the width will vary as per aspect ratio.
 		final float ratio = (float) width / height;
-		final float left = -ratio;
-		final float right = ratio;
-		final float bottom = -1.0f;
-		final float top = 1.0f;
-		final float near = -1.0f;
-		final float far = 10.0f;
 		
 		Matrix.orthoM(camera.getProjectionMatrix(), 0,
-				left, right, bottom, top, near, far);
-		sendVPMatrices();
+				/*left: */ 0, /*right: */ 10f / ratio, 
+				/*bottom: */ 0, /*top: */ 10f, 
+				/*near: */ 0, /*far: */ -10);
+		
+		shaderManager.notifyCameraChanged(camera);
 		
 		// change the background scale of the objects
 		for (HUDObject obj: objects.getObjectsByTag("background")) {
-			obj.setDimensions(1.0f / ratio, 1);
+			obj.setDimensions(10f / ratio, 10);
 		}
 	}
 	
-	/**
-	 * Sends the View and Projection matrices to the used shader programs.
-	 */
-	protected void sendVPMatrices() {
-		GLES20.glUseProgram(simpleTexShader);
-		int u_viewMatrix = GLES20.glGetUniformLocation(simpleTexShader, "u_viewMatrix");
-		int u_projectionMatrix = GLES20.glGetUniformLocation(simpleTexShader, "u_projectionMatrix");
-		GLES20.glUniformMatrix4fv(u_viewMatrix, 1, false, camera.getViewMatrix(), 0);
-		GLES20.glUniformMatrix4fv(u_projectionMatrix, 1, false, camera.getProjectionMatrix(), 0);
+	@Override
+	public Camera getCamera() {
+		return camera;
 	}
+	
+	@Override
+	public ShaderManager getShaderManager() {
+		return shaderManager;
+	}
+	
+	@Override
+	public DrawText getDrawText() {
+		return drawText;
+	}
+
 }

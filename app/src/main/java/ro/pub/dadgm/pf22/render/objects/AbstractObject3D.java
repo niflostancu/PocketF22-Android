@@ -2,12 +2,11 @@ package ro.pub.dadgm.pf22.render.objects;
 
 import android.opengl.Matrix;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import ro.pub.dadgm.pf22.render.Camera;
+import ro.pub.dadgm.pf22.render.Scene3D;
+import ro.pub.dadgm.pf22.render.Shader;
 
 /**
  * The AbstractObject3D provides an abstract but flexible implementation of a drawable 3D object.
@@ -29,11 +28,9 @@ public abstract class AbstractObject3D implements Object3D {
 	protected final int priority;
 	
 	/**
-	 * The camera that stores the view and projection matrices.
-	 * 
-	 * <p>Optional (used only if the object uses its own shaders).</p>
+	 * The scene that manages this object.
 	 */
-	protected Camera camera;
+	protected Scene3D scene;
 	
 	/**
 	 * Stores the object's model matrix.
@@ -44,15 +41,16 @@ public abstract class AbstractObject3D implements Object3D {
 	
 	/**
 	 * The shader program to use for drawing.
+	 * 
 	 * <p>Should be set during the constructor.</p>
 	 */
-	protected int program;
+	protected Shader shader;
 	
 	/**
 	 * A buffer used for storing the object's vertices.
 	 */
 	protected FloatBuffer vertexBuffer;
-
+	
 	/**
 	 * A buffer with vertex indices that form the triangles.
 	 */
@@ -61,8 +59,11 @@ public abstract class AbstractObject3D implements Object3D {
 	
 	/**
 	 * Default constructor.
+	 * 
+	 * @param scene The parent scene object.
 	 */
-	protected AbstractObject3D() {
+	protected AbstractObject3D(Scene3D scene) {
+		this.scene = scene;
 		this.tag = null;
 		this.priority = 0;
 		Matrix.setIdentityM(modelMatrix, 0);
@@ -71,10 +72,12 @@ public abstract class AbstractObject3D implements Object3D {
 	/**
 	 * Constructor with tag and priority overriding.
 	 * 
+	 * @param scene The parent scene object.
 	 * @param tag The object's tag.
 	 * @param priority The object's priority.
 	 */
-	protected AbstractObject3D(String tag, int priority) {
+	protected AbstractObject3D(Scene3D scene, String tag, int priority) {
+		this.scene = scene;
 		this.tag = tag;
 		this.priority = priority;
 		Matrix.setIdentityM(modelMatrix, 0);
@@ -93,27 +96,6 @@ public abstract class AbstractObject3D implements Object3D {
 	@Override
 	public void destroy() {
 		
-	}
-	
-	
-	// getters and setters
-	
-	/**
-	 * Returns the object's camera.
-	 * 
-	 * @return Object's camera.
-	 */
-	public Camera getCamera() {
-		return camera;
-	}
-	
-	/**
-	 * Changes the camera of the object.
-	 * 
-	 * @param camera The new camera object.
-	 */
-	public void setCamera(Camera camera) {
-		this.camera = camera;
 	}
 	
 }

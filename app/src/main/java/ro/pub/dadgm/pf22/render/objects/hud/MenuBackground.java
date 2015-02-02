@@ -6,9 +6,8 @@ import android.opengl.Matrix;
 import java.nio.FloatBuffer;
 
 import ro.pub.dadgm.pf22.R;
-import ro.pub.dadgm.pf22.render.Camera;
+import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.utils.BufferUtils;
-import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
 
 /**
@@ -30,10 +29,10 @@ public class MenuBackground extends HUDObject {
 	 * The object's triangles.
 	 */
 	protected static final float[] staticVertexArray = {
-		-1f,  1f, 0, // top left
-		-1f, -1f, 0, // bottom left
-		 1f, -1f, 0, // bottom right
-		 1f,  1f, 0 // top right
+		0f, 1f, 0, // top left
+		0f, 0f, 0, // bottom left
+		1f, 0f, 0, // bottom right
+		1f, 1f, 0  // top right
 	};
 	
 	/**
@@ -52,7 +51,7 @@ public class MenuBackground extends HUDObject {
 		1f, 1f, // bottom right
 		1f, 0f  // top right
 	};
-
+	
 	/**
 	 * Static color to blend the texture.
 	 */
@@ -70,17 +69,15 @@ public class MenuBackground extends HUDObject {
 	/**
 	 * Initializes the menu background object.
 	 * 
+	 * @param scene The parent scene object.
 	 * @param tag An optional tag.
 	 * @param priority An optional priority.
-	 * @param camera Reference to the camera object to use.
 	 */
-	public MenuBackground(String tag, int priority, Camera camera) {
-		super(tag, priority, camera);
+	public MenuBackground(Scene3D scene, String tag, int priority) {
+		super(scene, tag, priority);
 		
 		// load the GLSL program
-		program = ShaderLoader.createProgram(R.raw.simple_tex_v, R.raw.simple_tex_f, null);
-		if (program == 0)
-			throw new RuntimeException("The 'simple_tex' shader program could not be loaded!");
+		shader = scene.getShaderManager().getShader("simple_tex");
 		
 		// initialize the object's geometry
 		vertexBuffer = BufferUtils.asBuffer(staticVertexArray);
@@ -105,19 +102,19 @@ public class MenuBackground extends HUDObject {
 	public void draw() {
 		// update the object's model matrix
 		Matrix.setIdentityM(modelMatrix, 0);
-		Matrix.scaleM(modelMatrix, 0, width, height, 1);
 		Matrix.translateM(modelMatrix, 0, position.getX(), position.getY(), position.getZ());
+		Matrix.scaleM(modelMatrix, 0, width, height, 1);
 		
-		GLES20.glUseProgram(program);
+		shader.use();
 		
 		// get shader attributes' locations
-		int a_position = GLES20.glGetAttribLocation(program, "a_position");
-		int a_textureCoords = GLES20.glGetAttribLocation(program, "a_textureCoords");
+		int a_position = shader.getAttribLocation("a_position");
+		int a_textureCoords = shader.getAttribLocation("a_textureCoords");
 		
 		// get shader uniforms' locations
-		int u_texture = GLES20.glGetUniformLocation(program, "u_texture");
-		int u_modelMatrix = GLES20.glGetUniformLocation(program, "u_modelMatrix");
-		int u_color = GLES20.glGetUniformLocation(program, "u_color");
+		int u_texture = shader.getUniformLocation("u_texture");
+		int u_modelMatrix = shader.getUniformLocation("u_modelMatrix");
+		int u_color = shader.getUniformLocation("u_color");
 		
 		// send the matrices
 		GLES20.glUniformMatrix4fv(u_modelMatrix, 1, false, modelMatrix, 0);
