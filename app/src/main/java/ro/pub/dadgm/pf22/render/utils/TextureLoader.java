@@ -8,6 +8,7 @@ import android.opengl.GLUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +54,25 @@ public class TextureLoader {
 		
 		return texture[0];
 	}
+
+	/**
+	 * Unloads the specified texture from GPU memory.
+	 * 
+	 * @param texture The texture's handle to remove.
+	 */
+	public static void unloadTexture(int texture) {
+		// remove the texture from the cache, if it exists
+		String cacheKey = null;
+		for (Map.Entry<String, Integer> textureEntry: textureCache.entrySet()) {
+			if (textureEntry.getValue().equals(texture))
+				cacheKey = textureEntry.getKey();
+		}
+		if (cacheKey != null)
+			textureCache.remove(cacheKey);
+		
+		IntBuffer texToDelete = BufferUtils.asBuffer(new int[]{ texture });
+		GLES20.glDeleteTextures(1, texToDelete);
+	}
 	
 	/**
 	 * Reads and loads a texture bitmap from the specified Android resource ID.
@@ -92,6 +112,7 @@ public class TextureLoader {
 	 * @param path The path of the image asset to load.
 	 * @return Texture's handle (0 if load failed).
 	 */
+	@SuppressWarnings("unused")
 	public static int loadTextureFromAsset(String path) {
 		// check the cache if the texture was already loaded
 		String cacheKey = "asset_" + path;
@@ -101,7 +122,7 @@ public class TextureLoader {
 		
 		AssetManager assetManager = MainActivity.getAppContext().getAssets();
 		
-		Bitmap bitmap = null;
+		Bitmap bitmap;
 		try {
 			InputStream assetStream = assetManager.open(path);
 			bitmap = BitmapFactory.decodeStream(assetStream);
