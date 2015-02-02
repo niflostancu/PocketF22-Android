@@ -39,18 +39,23 @@ public class MenuTitle extends HUDObject {
 	
 	@Override
 	public void draw() {
-		drawText.reset();
+		float vRatio = scene.getCamera().getViewportRatio();
+		float fHeight = vRatio / 1.0f;
+		if (vRatio > 1) fHeight = 1;
+		float fHeight2 = fHeight * 0.7f;
 		
+		drawText.reset();
+
+		drawText.setStartPosition(position.getX(), position.getY() - fHeight, position.getZ());
 		drawText.setAlignment(DrawText.FontAlign.ALIGN_CENTER);
-		drawText.setStartPosition(position);
 		drawText.setColor(new float[] { 1.0f, 1.0f, 1.0f, 1.0f });
-		drawText.setScale(height);
+		drawText.setScale(fHeight);
 		
 		drawText.useFont("fonts/Roboto-Regular.ttf", 48);
 		drawText.drawText("Pocket F22");
 		
-		drawText.setStartPosition(position.getX(), position.getY() - height, position.getZ());
-		drawText.setScale(height * 0.7f);
+		drawText.setStartPosition(position.getX(), position.getY() - fHeight - fHeight2, position.getZ());
+		drawText.setScale(fHeight * 0.7f);
 		drawText.drawText("Flight Simulator 0.1 alpha");
 	}
 	

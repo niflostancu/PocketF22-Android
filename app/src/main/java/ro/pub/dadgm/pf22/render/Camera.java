@@ -21,6 +21,11 @@ public class Camera {
 	 */
 	protected float[] projectionMatrix = new float[16];
 	
+	/**
+	 * Stores the viewport's width/height ratio (used to determine if portrait or landscape).
+	 */
+	protected float viewportRatio;
+	
 	
 	/**
 	 * Default constructor. Initializes view and projection to identity matrix.
@@ -81,6 +86,20 @@ public class Camera {
 			throw new IllegalArgumentException("Invalid projection matrix specified!");
 		
 		System.arraycopy(this.projectionMatrix, 0, projectionMatrix, 0, projectionMatrix.length);
+	}
+	
+	/**
+	 * Returns the current viewport ratio.
+	 * 
+	 * @return Viewport's ratio (w/h).
+	 */
+	public float getViewportRatio() {
+		return viewportRatio;
+	}
+	
+	
+	public void setViewportRatio(float viewportRatio) {
+		this.viewportRatio = viewportRatio;
 	}
 	
 }

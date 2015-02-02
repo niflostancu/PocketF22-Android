@@ -101,7 +101,7 @@ public class MainMenu implements View, Scene3D {
 		
 		final Object[][] centeredObjects = new Object[][]{
 				// { object, position, size }
-				{ new MenuTitle(this, "text", 3), new float[]{ 0f, 8f, 5f }, new float[]{ 0, 1 } }, 
+				{ new MenuTitle(this, "text", 3), new float[]{ 0f, 9.5f, 5f }, new float[]{ 0, 1 } }, 
 		};
 		
 		for (Object[] objProps: centeredObjects) {
@@ -148,6 +148,7 @@ public class MainMenu implements View, Scene3D {
 		// Create a new perspective projection matrix. The height will stay the same
 		// while the width will vary as per aspect ratio.
 		final float ratio = (float) width / height;
+		camera.setViewportRatio(ratio);
 		float vWidth = 10f * ratio;
 		
 		Matrix.orthoM(camera.getProjectionMatrix(), 0,

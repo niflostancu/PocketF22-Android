@@ -1,22 +1,23 @@
 package ro.pub.dadgm.pf22.render.objects.hud;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import java.nio.FloatBuffer;
 
 import ro.pub.dadgm.pf22.R;
+import ro.pub.dadgm.pf22.activity.MainActivity;
 import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.utils.BufferUtils;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
 
 /**
- * Draws the menu background (an image).
+ * Draws a background image (quad filled with a texture).
  * 
- * <p>The menu background is a quad filled with a texture.</p>
- *
- * <p>The scene manager is responsible for correctly initializing its dimensions and a z depth so it 
- * is always drawn behind everything else.</p>
+ * <p>This object's dimensions must be equal to that of the scene's and the image will be zoomed 
+ * across them.</p>
  */
 public class MenuBackground extends HUDObject {
 	
@@ -43,16 +44,6 @@ public class MenuBackground extends HUDObject {
 	};
 	
 	/**
-	 * Texture's coordinates.
-	 */
-	protected static final float[] staticTextureCoords = {
-		0f, 0f, // top left
-		0f, 1f, // bottom left
-		1f, 1f, // bottom right
-		1f, 0f  // top right
-	};
-	
-	/**
 	 * Static color to blend the texture.
 	 */
 	protected static final float[] staticColor = {
@@ -64,6 +55,11 @@ public class MenuBackground extends HUDObject {
 	 * A FloatBuffer for the texture coordinates.
 	 */
 	protected FloatBuffer textureCoordsBuf;
+
+	/**
+	 * Texture's width/height ratio.
+	 */
+	protected float textureRatio;
 	
 	
 	/**
@@ -84,14 +80,23 @@ public class MenuBackground extends HUDObject {
 		vertexIndexBuffer = BufferUtils.asBuffer(staticIndexArray);
 		
 		// load the menu background as a texture
-		// texture = TextureLoader.loadTextureFromAsset("menu_background.png");
-		texture = TextureLoader.loadTextureFromResource(R.drawable.background);
+		// disable pre-scaling
+		final BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inScaled = false;
+		final Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.getAppContext().getResources(), R.drawable.background, options);
+		if (bitmap == null) 
+			throw new RuntimeException("Unable to load the background image!");
+		
+		texture = TextureLoader.loadTexture(bitmap);
+		textureRatio = (float)bitmap.getWidth() / (float)bitmap.getHeight();
+		bitmap.recycle();
+		
 		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
 		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
 		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
 		
-		textureCoordsBuf = BufferUtils.asBuffer(staticTextureCoords);
+		textureCoordsBuf = BufferUtils.allocateFloatBuffer(4 * 2);
 		
 		if (texture == 0) 
 			throw new RuntimeException("Unable to load the background texture!");
@@ -130,10 +135,22 @@ public class MenuBackground extends HUDObject {
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
 		GLES20.glUniform1i(u_texture, 0);
 		
+		// zoom the image, centered by X
+		float screenRatio = width / height;
+		float dx = Math.abs( textureRatio - screenRatio ) / 2.0f / textureRatio;
+		float[] textureCoords = {
+				dx, 0f, // top left
+				dx, 1f, // bottom left
+				1.0f - dx, 1f, // bottom right
+				1.0f - dx, 0f  // top right
+		};
+		
 		// send the texture coords
-		textureCoordsBuf.position(0);
+		textureCoordsBuf.put(textureCoords);
+		textureCoordsBuf.flip();
 		GLES20.glVertexAttribPointer(a_textureCoords, 2 /* coords */, GLES20.GL_FLOAT, false, 0, textureCoordsBuf);
 		GLES20.glEnableVertexAttribArray(a_textureCoords);
+		textureCoordsBuf.clear();
 		
 		// draw!
 		GLES20.glDrawElements(GLES20.GL_TRIANGLES, staticIndexArray.length, GLES20.GL_UNSIGNED_SHORT, vertexIndexBuffer);
