@@ -41,6 +41,7 @@ public class MenuTitle extends HUDObject {
 	public void draw() {
 		drawText.reset();
 		
+		drawText.setAlignment(DrawText.FontAlign.ALIGN_CENTER);
 		drawText.setStartPosition(position);
 		drawText.setColor(new float[] { 1.0f, 1.0f, 1.0f, 1.0f });
 		drawText.setScale(height);

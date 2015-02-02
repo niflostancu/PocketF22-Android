@@ -9,6 +9,7 @@ import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.ShaderManager;
 import ro.pub.dadgm.pf22.render.View;
 import ro.pub.dadgm.pf22.render.objects.ObjectsManager;
+import ro.pub.dadgm.pf22.render.objects.hud.CenteredContainer;
 import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
 import ro.pub.dadgm.pf22.render.objects.hud.MenuBackground;
 import ro.pub.dadgm.pf22.render.objects.hud.MenuTitle;
@@ -19,8 +20,8 @@ import ro.pub.dadgm.pf22.render.utils.DrawText;
  * 
  * <p>The view is a 2D scene that contains a background image, and several menu buttons and texts.</p>
  * 
- * <p>The world space is x=[0, 10], y=[0, 10]. Its objects will be scaled so that the value of the 
- * largest screen dimension is 10.</p>
+ * <p>The world space is x=[0, 10], y=[0, 10]. Its scene will be scaled so that the value of the 
+ * height is always 10 and the aspect ratio is maintained (only width will vary).</p>
  */
 public class MainMenu implements View, Scene3D {
 	
@@ -70,7 +71,7 @@ public class MainMenu implements View, Scene3D {
 		// draw text library
 		drawText = new DrawText(this);
 	}
-
+	
 	/**
 	 * Build the main menu scene.
 	 */
@@ -82,18 +83,28 @@ public class MainMenu implements View, Scene3D {
 			String name = (String)shaderProps[0];
 			Integer vertexRes = (Integer)shaderProps[1];
 			Integer fragmentRes = (Integer)shaderProps[2];
-
+			
 			shaderManager.registerShader(name, vertexRes, fragmentRes);
 		}
 		
-		final Object[][] sceneObjects = new Object[][]{
+		// initialize the scene objects
+		
+		MenuBackground background = new MenuBackground(this, "fullsize", -9);
+		background.setDimensions(10, 10);
+		background.position().setCoordinates(0, 0, 9.9f);
+		objects.add(background);
+		
+		CenteredContainer centeredContainer = new CenteredContainer(this, "fullsize", -5);
+		centeredContainer.position().setCoordinates(0, 0, -1);
+		centeredContainer.setDimensions(10, 10);
+		objects.add(centeredContainer);
+		
+		final Object[][] centeredObjects = new Object[][]{
 				// { object, position, size }
-				{ new MenuBackground(this, "background", 0), new float[]{ 0, 0, 9.9f }, new float[]{ 10, 10 } },
-				{ new MenuTitle(this, "text", 0), new float[]{ 2f, 8f, 5f }, new float[]{ 0, 1 } }, 
+				{ new MenuTitle(this, "text", 3), new float[]{ 0f, 8f, 5f }, new float[]{ 0, 1 } }, 
 		};
 		
-		// add the background objects
-		for (Object[] objProps: sceneObjects) {
+		for (Object[] objProps: centeredObjects) {
 			HUDObject hudObject = (HUDObject)objProps[0];
 			if (objProps.length > 1) {
 				float[] position = (float[]) objProps[1];
@@ -104,9 +115,10 @@ public class MainMenu implements View, Scene3D {
 				hudObject.setDimensions(size[0], size[1]);
 			}
 			
-			objects.add(hudObject);
+			centeredContainer.getObjects().add(hudObject);
 		}
 		
+		centeredContainer.repositionObjects();
 	}
 	
 	@Override
@@ -136,17 +148,18 @@ public class MainMenu implements View, Scene3D {
 		// Create a new perspective projection matrix. The height will stay the same
 		// while the width will vary as per aspect ratio.
 		final float ratio = (float) width / height;
+		float vWidth = 10f * ratio;
 		
 		Matrix.orthoM(camera.getProjectionMatrix(), 0,
-				/*left: */ 0, /*right: */ 10f / ratio, 
+				/*left: */ 0, /*right: */ vWidth, 
 				/*bottom: */ 0, /*top: */ 10f, 
 				/*near: */ 0, /*far: */ -10);
 		
 		shaderManager.notifyCameraChanged(camera);
 		
 		// change the background scale of the objects
-		for (HUDObject obj: objects.getObjectsByTag("background")) {
-			obj.setDimensions(10f / ratio, 10);
+		for (HUDObject obj: objects.getObjectsByTag("fullsize")) {
+			obj.setDimensions(vWidth, 10);
 		}
 	}
 	
@@ -164,5 +177,5 @@ public class MainMenu implements View, Scene3D {
 	public DrawText getDrawText() {
 		return drawText;
 	}
-
+	
 }

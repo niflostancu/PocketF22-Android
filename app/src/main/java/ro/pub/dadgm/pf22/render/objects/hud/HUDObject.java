@@ -48,7 +48,16 @@ public abstract class HUDObject extends AbstractObject3D {
 	public Point3D position() {
 		return position;
 	}
-
+	
+	/**
+	 * Returns the 2D dimensions of the object.
+	 * 
+	 * @return A float[2] array with the width and the height of the object.
+	 */
+	public float[] getDimensions() {
+		return new float[] { width, height };
+	}
+	
 	/**
 	 * Changes the dimensions of the 2D object.
 	 * 

@@ -46,7 +46,7 @@ public class DrawText {
 	
 	// and the characters count
 	public final char CHARS = (CHAR_END - CHAR_START + 1);
-
+	
 	/**
 	 * The length (in "printed characters") of the internal buffer used to draw.
 	 * 
@@ -60,6 +60,15 @@ public class DrawText {
 	 */
 	public final int PAD_X = 2, PAD_Y = 2;
 	
+	
+	/**
+	 * Font alignment enum.
+	 */
+	public static enum FontAlign {
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT
+	}
 	
 	/**
 	 * Represents the font map (font as an OpenGL texture) for a specific font and size combination.
@@ -339,6 +348,11 @@ public class DrawText {
 	 */
 	protected float scale;
 	
+	/**
+	 * The font alignment to use for rendering.
+	 */
+	protected FontAlign alignment;
+	
 	
 	/**
 	 * Initializes the DrawText library.
@@ -451,6 +465,15 @@ public class DrawText {
 	}
 	
 	/**
+	 * Changes font alignment to use for drawing.
+	 * 
+	 * @param alignment The font alignment to set.
+	 */
+	public void setAlignment(FontAlign alignment) {
+		this.alignment = alignment;
+	}
+	
+	/**
 	 * Resets all text draw properties to their default values.
 	 * 
 	 * <p>Does not affect the current font.</p>
@@ -460,6 +483,7 @@ public class DrawText {
 		setSpaceX(0);
 		setStartPosition(0, 0, 0);
 		setScale(1.0f);
+		setAlignment(FontAlign.ALIGN_LEFT);
 	}
 	
 	
@@ -475,11 +499,23 @@ public class DrawText {
 	 * @param text The text to draw.
 	 */
 	public void drawText(String text) {
-		int curX = 0; // current X position to draw the character
-		final int curY = 0; // doesn't change
+		float curX; // current X position to draw the character
+		final float curY = 0; // doesn't change
 		
 		if (currentFont == null)
 			throw new IllegalStateException("No font selected!");
+		
+		// set starting X position
+		final float drawWidth = calculateDrawWidth(text);
+		switch (alignment) {
+			case ALIGN_CENTER:
+				curX = -drawWidth / 2.0f; break;
+			case ALIGN_RIGHT:
+				curX = -drawWidth; break;
+			case ALIGN_LEFT:
+			default:
+				curX = 0;
+		}
 		
 		// split the text into chunks for max DRAW_BUFFERS_LENGTH characters
 		int charsLeft = text.length();
@@ -586,6 +622,28 @@ public class DrawText {
 			workIndexBuf.clear();
 			workTextureCoordsBuf.clear();
 		}
+	}
+	
+	/**
+	 * Calculates the text's width (in OpenGL object space).
+	 * 
+	 * @param text The text to calculate dimension for.
+	 * @return Text's width when drawn.
+	 */
+	public float calculateDrawWidth(String text) {
+		if (currentFont == null)
+			throw new IllegalStateException("No font selected!");
+		
+		float width = 0;
+		
+		for (int i=0; i<text.length(); i++) {
+			final char c = text.charAt(i);
+			final float charWidth = currentFont.getCharWidth(c) + 2*PAD_X;
+			
+			width += charWidth + spaceX;
+		}
+		
+		return width;
 	}
 	
 	/**
