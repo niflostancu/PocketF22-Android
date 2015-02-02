@@ -14,6 +14,8 @@ import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
 import ro.pub.dadgm.pf22.render.objects.hud.MenuBackground;
 import ro.pub.dadgm.pf22.render.objects.hud.MenuTitle;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
+import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
+import ro.pub.dadgm.pf22.render.utils.TextureLoader;
 
 /**
  * The view for the game's main menu.
@@ -77,6 +79,12 @@ public class MainMenu implements View, Scene3D {
 	 */
 	@Override
 	public void onActivate() {
+		// clean up structures first
+		ShaderLoader.clear();
+		TextureLoader.clear();
+		objects.clear();
+		shaderManager.clear();
+		drawText.destroy();
 		
 		// initialize the shaders
 		for (Object[] shaderProps: REGISTER_SHADERS) {

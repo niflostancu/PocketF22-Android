@@ -61,4 +61,12 @@ public class ShaderManager {
 		}
 	}
 	
+	/**
+	 * Cleans up the internal state of the object.
+	 * To be called when the EGL context has been reset.
+	 */
+	public void clear() {
+		shaderMap.clear();
+	}
+	
 }

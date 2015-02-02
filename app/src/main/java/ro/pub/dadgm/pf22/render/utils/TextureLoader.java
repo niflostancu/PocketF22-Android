@@ -140,4 +140,12 @@ public class TextureLoader {
 		return texture;
 	}
 	
+	/**
+	 * Cleans up the internal state of the object.
+	 * To be called when the EGL context has been reset.
+	 */
+	public static void clear() {
+		textureCache.clear();
+	}
+	
 }

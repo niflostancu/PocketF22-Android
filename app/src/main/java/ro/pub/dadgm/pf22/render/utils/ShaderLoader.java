@@ -209,5 +209,13 @@ public class ShaderLoader {
 		
 		return body.toString();
 	}
+	
+	/**
+	 * Cleans up the internal state of the object.
+	 * To be called when the EGL context has been reset.
+	 */
+	public static void clear() {
+		shaderCache.clear();
+	}
 
 }
