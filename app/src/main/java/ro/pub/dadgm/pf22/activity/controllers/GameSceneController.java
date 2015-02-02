@@ -72,4 +72,8 @@ public class GameSceneController implements Controller {
 		mainActivity.getSurfaceView().setView(view);
 	}
 	
+	@Override
+	public void queueEvent(Runnable worker) {
+		mainActivity.getSurfaceView().queueEvent(worker);
+	}
 }

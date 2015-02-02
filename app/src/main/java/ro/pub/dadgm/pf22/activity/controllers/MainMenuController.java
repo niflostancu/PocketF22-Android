@@ -85,4 +85,9 @@ public class MainMenuController implements Controller {
 		mainActivity.getSurfaceView().setView(view);
 	}
 	
+	@Override
+	public void queueEvent(Runnable worker) {
+		mainActivity.getSurfaceView().queueEvent(worker);
+	}
+	
 }

@@ -38,7 +38,7 @@ void main()
 	v_normal = vec3(mvMatrix * vec4(a_normal, 0.0));
 	v_textureCoords = a_textureCoords;
 	
-	vec3 mvLightPos = vec3(u_viewMatrix * vec4(u_lightPos, 1.0));
+	vec3 mvLightPos = vec3(u_viewMatrix * vec4(u_lightPos, 0.0));
 	lightDir = normalize(mvLightPos.xyz - v_position.xyz);
 	viewDir = normalize(-v_position);
 }

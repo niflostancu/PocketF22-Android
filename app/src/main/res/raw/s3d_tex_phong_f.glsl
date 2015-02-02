@@ -28,12 +28,11 @@ varying vec3 viewDir;
 // Shader entry point
 void main()
 {
-	vec3 reflectDir = reflect(-lightDir, v_normal);
-    
-	float lambertian = max(dot(lightDir, v_normal), 0.0);
+	float lambertian = max(dot(lightDir, v_normal), 0.1);
 	float specular = 0.0;
 	
-	if (lambertian > 0.0) {
+	if (lambertian > 0.1) {
+		vec3 reflectDir = reflect(lightDir, v_normal);
 		float specAngle = max(dot(reflectDir, viewDir), 0.0);
 		specular = pow(specAngle, u_shininess);
 	}
@@ -47,6 +46,5 @@ void main()
 			alpha = texColor4.a;
 	}
 	
-	gl_FragColor = vec4(u_ambientColor + u_diffuseColor * texColor + specular * u_specularColor * 0.01, alpha);
-	
+	gl_FragColor = vec4(u_ambientColor + lambertian * u_diffuseColor * texColor + specular * u_specularColor, alpha);
 }

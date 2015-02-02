@@ -64,7 +64,7 @@ public class FighterJet3D extends AbstractObject3D {
 		Matrix.scaleM(modelMatrix, 0, 0.3f, 0.3f, 0.3f);
 		Matrix.rotateM(modelMatrix, 0, -90, 1, 0, 0);
 		
-		float[] lightPosition = new float[] { 1.0f, 10f, 10f };
+		float[] lightPosition = new float[] { 1.0f, 20f, 2f };
 		float[] normalMatrix = scene.getCamera().computeNormalMatrix(modelMatrix);
 		
 		shader.use();

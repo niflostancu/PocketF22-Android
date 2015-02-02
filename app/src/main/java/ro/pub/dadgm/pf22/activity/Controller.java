@@ -39,5 +39,12 @@ public interface Controller {
 	 * as active.</p>
 	 */
 	public void activate();
+
+	/**
+	 * Queues an event to be executed on the GL thread.
+	 * 
+	 * @param worker The runnable to execute.
+	 */
+	public void queueEvent(Runnable worker);
 	
 }

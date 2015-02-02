@@ -18,6 +18,7 @@ import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
+import ro.pub.dadgm.pf22.utils.Point3D;
 
 /**
  * The view for the game's 3D scene.
@@ -148,6 +149,22 @@ public class GameScene implements View {
 	
 	
 	/**
+	 * Stores the current camera angle.
+	 */
+	protected float[] cameraAngle = new float[2];
+
+	/**
+	 * Stores camera's center position (player's fighter jet).
+	 */
+	protected Point3D cameraPosition = new Point3D();
+	
+	/**
+	 * The initial coordinates on touch down.
+	 */
+	protected float[] initialTouchPoint = new float[2];
+	
+	
+	/**
 	 * Constructs the main menu of the game.
 	 */
 	public GameScene(GameSceneController controller) {
@@ -204,8 +221,11 @@ public class GameScene implements View {
 		
 		// initialize the scene objects
 		FighterJet3D testJet = new FighterJet3D(gameScene3D, "fighter", 0);
-		
 		objects.add(testJet);
+		
+		// initialize the camera
+		cameraAngle[0] = cameraAngle[1] = 0;
+		cameraPosition.setCoordinates(0, 0, 0);
 	}
 	
 	@Override
@@ -247,24 +267,18 @@ public class GameScene implements View {
 			camera.setViewportDims(width, height);
 			hudCamera.setViewportDims(width, height);
 			
-			Matrix.setLookAtM(camera.getViewMatrix(), 0,
-					1, 2, -5, 
-					0f, 0f, 0, 
-					0f, 1.0f, 0.0f );
-			
-			Matrix.frustumM(camera.getProjectionMatrix(), 0,
-					-ratio, ratio, -1f, 1f, 1f, 50f );
-			
 			Matrix.orthoM(hudCamera.getProjectionMatrix(), 0,
 				/*left: */ 0, /*right: */ vWidth, 
 				/*bottom: */ 0, /*top: */ 10f, 
 				/*near: */ 0, /*far: */ -10);
-			
-			// camera.computeReverseMatrix(); -- not needed
 			hudCamera.computeReverseMatrix();
-			
-			shaderManager3D.notifyCameraChanged(camera);
 			shaderManagerHUD.notifyCameraChanged(hudCamera);
+			
+			// update the 3D camera
+			Matrix.frustumM(camera.getProjectionMatrix(), 0,
+					-ratio, ratio, -1f, 1f, 1f, 50f );
+			
+			updateCamera();
 		}
 	}
 	
@@ -280,28 +294,53 @@ public class GameScene implements View {
 				// convert viewport to world coordinates
 				float[] objCoords = camera.unProjectCoordinates(e.getX(), e.getY());
 				
-				if (objCoords == null)
-					return true;
-				
-				// identify the target object
-				for (HUDObject hudObject : hudObjects) {
-					if (hudObject.getBoundingBox().contains(objCoords[0], objCoords[1])) {
-						target = hudObject;
+				if (objCoords != null) {
+					// identify the target object
+					for (HUDObject hudObject : hudObjects) {
+						if (hudObject.getBoundingBox().contains(objCoords[0], objCoords[1])) {
+							target = hudObject;
+						}
 					}
-				}
-				
-				if (target == null) {
-					if (currentHover != null) {
-						// send the currently hovered object a HOVER_EXIT event 
-						e.setAction(MotionEvent.ACTION_HOVER_EXIT);
-						currentHover.onTouchEvent(e);
+					
+					if (target == null) {
+						if (currentHover != null) {
+							// send the currently hovered object a HOVER_EXIT event 
+							e.setAction(MotionEvent.ACTION_HOVER_EXIT);
+							currentHover.onTouchEvent(e);
+						}
+						currentHover = null;
 					}
-					currentHover = null;
-					return true;
 				}
 			}
 			
-			if ( e.getAction() == MotionEvent.ACTION_DOWN ||
+			if (target == null) {
+				// move the camera
+				if (e.getAction() == MotionEvent.ACTION_DOWN) {
+					initialTouchPoint[0] = e.getX();
+					initialTouchPoint[1] = e.getY();
+					
+				} else if (e.getAction() == MotionEvent.ACTION_MOVE) {
+					final float SENSIBILITY = 0.5f;
+					
+					float dx = initialTouchPoint[0] - e.getX();
+					float dy = initialTouchPoint[1] - e.getY();
+					cameraAngle[0] = (cameraAngle[0] + dx * SENSIBILITY) % 360;
+					cameraAngle[1] = (cameraAngle[1] - dy * SENSIBILITY) % 360;
+					
+					initialTouchPoint[0] = e.getX();
+					initialTouchPoint[1] = e.getY();
+					
+					controller.queueEvent(new Runnable() {
+						@Override
+						public void run() {
+							synchronized (lock) {
+								updateCamera();
+							}
+						}
+					});
+				}
+				
+			} else if ( e.getAction() == MotionEvent.ACTION_DOWN ||
 					e.getAction() == MotionEvent.ACTION_MOVE ) {
 				
 				int oldAction = e.getAction();
@@ -326,7 +365,7 @@ public class GameScene implements View {
 				
 				target.onTouchEvent(e);
 				
-			} else {
+			} else if (e.getAction() == MotionEvent.ACTION_UP) {
 				// we have an ACTION_UP event
 				// send HOVER_EXIT events
 				if (currentHover != null) {
@@ -352,6 +391,33 @@ public class GameScene implements View {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Recalculates camera's position based on the player plane's position and viewing direction.
+	 * 
+	 * <p>Must be executed from the OpenGL thread!</p>
+	 */
+	protected void updateCamera() {
+		// set the camera to a position around the center
+		// TODO: calculate it based on the direction that the plane faces
+		float[] initialPoint = new float[] { 0, 1.0f, -5.0f, 1 };
+		float[] resPoint = new float[4];
+		
+		// rotate the point around the center
+		float[] matr = new float[16];
+		Matrix.setIdentityM(matr, 0);
+		Matrix.translateM(matr, 0, cameraPosition.getX(), cameraPosition.getY(), cameraPosition.getZ());
+		Matrix.rotateM(matr, 0, cameraAngle[0], 0, 1, 0);
+		Matrix.rotateM(matr, 0, cameraAngle[1], 1, 0, 0);
+		Matrix.multiplyMV(resPoint, 0, matr, 0, initialPoint, 0);
+		
+		Matrix.setLookAtM(camera.getViewMatrix(), 0, 
+				resPoint[0], resPoint[1], resPoint[2],  
+				cameraPosition.getX(), cameraPosition.getY(), cameraPosition.getZ(), 
+				0f, 1.0f, 0.0f );
+		
+		shaderManager3D.notifyCameraChanged(camera);
 	}
 	
 }
