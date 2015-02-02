@@ -5,34 +5,65 @@ import android.opengl.Matrix;
 import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 
-import java.util.Collections;
-
 import ro.pub.dadgm.pf22.R;
-import ro.pub.dadgm.pf22.activity.controllers.MainMenuController;
+import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
 import ro.pub.dadgm.pf22.render.Camera;
 import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.ShaderManager;
 import ro.pub.dadgm.pf22.render.View;
+import ro.pub.dadgm.pf22.render.objects.Object3D;
 import ro.pub.dadgm.pf22.render.objects.ObjectsManager;
-import ro.pub.dadgm.pf22.render.objects.hud.CenteredContainer;
 import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
-import ro.pub.dadgm.pf22.render.objects.hud.MenuBackground;
-import ro.pub.dadgm.pf22.render.objects.hud.MenuContainer;
-import ro.pub.dadgm.pf22.render.objects.hud.MenuItem;
-import ro.pub.dadgm.pf22.render.objects.hud.MenuTitle;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
 
 /**
- * The view for the game's main menu.
+ * The view for the game's 3D scene.
  * 
- * <p>The view is a 2D scene that contains a background image, and several menu buttons and texts.</p>
- * 
- * <p>The world space is x=[0, 10], y=[0, 10]. Its scene will be scaled so that the value of the 
- * height is always 10 and the aspect ratio is maintained (only width will vary).</p>
+ * <p>The world space is given by the Game model instance.</p>
  */
-public class MainMenu implements View, Scene3D {
+public class GameScene implements View {
+	
+	/**
+	 * Implements the Scene3D interface and offers services to the game scene's 3D objects.
+	 */
+	protected class GameScene3D implements Scene3D {
+		@Override
+		public Camera getCamera() {
+			return GameScene.this.camera;
+		}
+		
+		@Override
+		public ShaderManager getShaderManager() {
+			return GameScene.this.shaderManager;
+		}
+		
+		@Override
+		public DrawText getDrawText() {
+			return null;
+		}
+	}
+
+	/**
+	 * The Scene3D implementation to be offered to the HUD objects.
+	 */
+	protected class GameHUD implements Scene3D {
+		@Override
+		public Camera getCamera() {
+			return GameScene.this.hudCamera;
+		}
+		
+		@Override
+		public ShaderManager getShaderManager() {
+			return GameScene.this.hudShaderManager;
+		}
+		
+		@Override
+		public DrawText getDrawText() {
+			return GameScene.this.drawText;
+		}
+	}
 	
 	/**
 	 * The list of shaders to register (used by this view).
@@ -45,22 +76,37 @@ public class MainMenu implements View, Scene3D {
 	/**
 	 * Reference to the controller.
 	 */
-	protected MainMenuController controller;
+	protected GameSceneController controller;
 	
 	/**
-	 * The camera used for the menu.
+	 * Internal GameScene3D instance to present to the 3D scene objects.
+	 */
+	protected GameScene3D gameScene3D;
+	
+	/**
+	 * Internal GameHUD instance to present to the HUD objects.
+	 */
+	protected GameHUD gameHUD;
+	
+	/**
+	 * The camera used for the game.
 	 */
 	protected Camera camera;
 	
 	/**
-	 * The list of objects to be rendered.
+	 * The camera used for the HUD.
 	 */
-	protected ObjectsManager<HUDObject> objects;
+	protected Camera hudCamera;
+	
+	/**
+	 * The list of 3D objects to be rendered.
+	 */
+	protected ObjectsManager<Object3D> objects;
 	
 	/**
 	 * The clickable menu items.
 	 */
-	protected ObjectsManager<HUDObject> menuItems;
+	protected ObjectsManager<HUDObject> hudObjects;
 	
 	/**
 	 * The shader manager used for this view.
@@ -68,12 +114,17 @@ public class MainMenu implements View, Scene3D {
 	protected ShaderManager shaderManager;
 	
 	/**
-	 * The text drawing library.
+	 * The shader manager used for the HUD objects.
+	 */
+	protected ShaderManager hudShaderManager;
+	
+	/**
+	 * The text drawing library used for the HUD objects.
 	 */
 	protected DrawText drawText;
 	
 	/**
-	 * Stores the initially-clicked and currently-hovered object.
+	 * Stores the initially-clicked and currently-hovered HUD object.
 	 * 
 	 * <p>Should only be accessed from the Activity thread!</p>
 	 */
@@ -90,8 +141,12 @@ public class MainMenu implements View, Scene3D {
 	/**
 	 * Constructs the main menu of the game.
 	 */
-	public MainMenu(MainMenuController controller) {
+	public GameScene(GameSceneController controller) {
 		this.controller = controller;
+		
+		// initialize Scene3D interfaces
+		gameScene3D = new GameScene3D();
+		gameHUD = new GameHUD();
 		
 		// initialize the objects manager
 		objects = new ObjectsManager<>();
@@ -103,7 +158,7 @@ public class MainMenu implements View, Scene3D {
 		shaderManager = new ShaderManager();
 		
 		// draw text library
-		drawText = new DrawText(this);
+		drawText = new DrawText(gameHUD);
 	}
 	
 	/**
@@ -129,59 +184,21 @@ public class MainMenu implements View, Scene3D {
 		
 		// initialize the scene objects
 		
-		MenuBackground background = new MenuBackground(this, "fullsize", -9);
-		background.setDimensions(10, 10);
-		background.position().setCoordinates(0, 0, 9.9f);
-		objects.add(background);
 		
-		CenteredContainer centeredContainer = new CenteredContainer(this, "fullsize", -6);
-		centeredContainer.position().setCoordinates(0, 0, -1);
-		centeredContainer.setDimensions(10, 10);
-		objects.add(centeredContainer);
-		
-		MenuContainer menuContainer = new MenuContainer(this, "fullsize", -3);
-		menuContainer.position().setCoordinates(0, 0, -1);
-		menuContainer.setDimensions(10, 7);
-		objects.add(menuContainer);
-		menuItems = menuContainer.getObjects();
-		
-		final Object[][] centeredObjects = new Object[][]{
-				// { object, position, size }
-				{ new MenuTitle(this, "text", 3), new float[]{ 0f, 9.5f, 5f }, new float[]{ 0, 1 } }, 
-		};
-		final HUDObject[] menuObjects = new HUDObject[]{
-				// uses the priority to establish the order of the items
-				new MenuItem(this, "menu_item", 0, "Start Game", controller.getAction("start_game")),
-				new MenuItem(this, "menu_item", 1, "Sound", controller.getAction("toggle_sound")),
-				new MenuItem(this, "menu_item", 2, "Difficulty", controller.getAction("toggle_difficulty")),
-		};
-		
-		for (Object[] objProps: centeredObjects) {
-			HUDObject hudObject = (HUDObject)objProps[0];
-			if (objProps.length > 1) {
-				float[] position = (float[]) objProps[1];
-				hudObject.position().setCoordinates(position[0], position[1], position[2]);
-			}
-			if (objProps.length > 2) {
-				float[] size = (float[]) objProps[2];
-				hudObject.setDimensions(size[0], size[1]);
-			}
-			
-			centeredContainer.getObjects().add(hudObject);
-		}
-		centeredContainer.repositionObjects();
-		
-		Collections.addAll(menuItems, menuObjects);
-		menuContainer.repositionObjects();
 	}
 	
 	@Override
 	public void onClose() {
 		// destroy the objects
-		for (HUDObject obj: objects) {
+		for (Object3D obj: objects) {
 			obj.destroy();
 		}
 		objects.clear();
+		
+		for (HUDObject obj: hudObjects) {
+			obj.destroy();
+		}
+		hudObjects.clear();
 		
 		// destroy the DrawText instance.
 		drawText.destroy();
@@ -213,11 +230,6 @@ public class MainMenu implements View, Scene3D {
 			camera.computeReverseMatrix();
 			
 			shaderManager.notifyCameraChanged(camera);
-			
-			// change the background scale of the objects
-			for (HUDObject obj : objects.getObjectsByTag("fullsize")) {
-				obj.setDimensions(vWidth, obj.getDimensions()[1]);
-			}
 		}
 	}
 	
@@ -237,7 +249,7 @@ public class MainMenu implements View, Scene3D {
 					return true;
 				
 				// identify the target object
-				for (HUDObject hudObject : menuItems) {
+				for (HUDObject hudObject : hudObjects) {
 					if (hudObject.getBoundingBox().contains(objCoords[0], objCoords[1])) {
 						target = hudObject;
 					}
@@ -305,21 +317,6 @@ public class MainMenu implements View, Scene3D {
 		}
 		
 		return false;
-	}
-	
-	@Override
-	public Camera getCamera() {
-		return camera;
-	}
-	
-	@Override
-	public ShaderManager getShaderManager() {
-		return shaderManager;
-	}
-	
-	@Override
-	public DrawText getDrawText() {
-		return drawText;
 	}
 	
 }

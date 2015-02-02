@@ -1,17 +1,17 @@
-package ro.pub.dadgm.pf22.activity;
+package ro.pub.dadgm.pf22.activity.controllers;
 
 import android.view.View;
 
 import java.util.HashMap;
 
+import ro.pub.dadgm.pf22.activity.Controller;
+import ro.pub.dadgm.pf22.activity.MainActivity;
 import ro.pub.dadgm.pf22.render.views.MainMenu;
 
 /**
  * Acts as controller for the main menu view, handling menu item click events.
- * 
- * <p>All of its methods must be called from the Activity thread.</p>
  */
-public class MainMenuController {
+public class MainMenuController implements Controller {
 	
 	/**
 	 * Reference to the parent activity.
@@ -32,7 +32,7 @@ public class MainMenuController {
 	/**
 	 * Controller object constructor.
 	 */
-	public MainMenuController(MainActivity mainActivity) {
+	public MainMenuController(final MainActivity mainActivity) {
 		this.mainActivity = mainActivity;
 		this.view = new MainMenu(this);
 		
@@ -42,7 +42,7 @@ public class MainMenuController {
 		actions.put("start_game", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO
+				mainActivity.getController("game_scene").activate();
 			}
 		});
 		
@@ -68,36 +68,19 @@ public class MainMenuController {
 		});
 	}
 	
-	
-	/**
-	 * Returns the specified action's object.
-	 * 
-	 * <p>The action MUST be executed from the Activity thread!</p>
-	 * 
-	 * @param actionName The name of the action to fetch.
-	 * @return The action's object, if found, null otherwise.   
-	 */
+	@Override
 	public synchronized View.OnClickListener getAction(String actionName) {
 		if (actions.containsKey(actionName)) 
 			return actions.get(actionName);
 		return null;
 	}
 	
-	
-	// getters / setters
-	
-	/**
-	 * Returns the view object used for rendering.
-	 * 
-	 * @return Reference to the managed view object
-	 */
-	public MainMenu getView() {
+	@Override
+	public ro.pub.dadgm.pf22.render.View getView() {
 		return view;
 	}
 	
-	/**
-	 * Activates the view.
-	 */
+	@Override
 	public void activate() {
 		mainActivity.getSurfaceView().setView(view);
 	}

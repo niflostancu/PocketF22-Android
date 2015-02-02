@@ -8,15 +8,20 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ro.pub.dadgm.pf22.R;
+import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
+import ro.pub.dadgm.pf22.activity.controllers.MainMenuController;
 import ro.pub.dadgm.pf22.render.SurfaceView;
 
 public class MainActivity extends Activity {
 	
 	/**
-	 * The view class for the game's main menu.
+	 * Stores the controllers associates to the different game scenes / views.
 	 */
-	private MainMenuController mainMenuController;
+	private Map<String, Controller> controllers = new HashMap<>();
 	
 	/**
 	 * The GL Renderer to be used for displaying the game screen.
@@ -38,11 +43,15 @@ public class MainActivity extends Activity {
 		
 		appContext = getApplicationContext();
 		
-		// build the main menu view object
-		mainMenuController = new MainMenuController(this);
+		// build the controller objects
+		MainMenuController mainMenu = new MainMenuController(this);
+		GameSceneController gameScene = new GameSceneController(this);
+		
+		controllers.put("main_menu", mainMenu);
+		controllers.put("game_scene", gameScene);
 		
 		// initialize the surface
-		surfaceView = new SurfaceView(this, mainMenuController.getView());
+		surfaceView = new SurfaceView(this, mainMenu.getView());
 		setContentView(surfaceView);
 	}
 	
@@ -76,7 +85,7 @@ public class MainActivity extends Activity {
 
 		return super.onOptionsItemSelected(item);
 	}
-
+	
 	/**
 	 * Returns the SurfaceView reference.
 	 * 
@@ -84,6 +93,16 @@ public class MainActivity extends Activity {
 	 */
 	public SurfaceView getSurfaceView() {
 		return surfaceView;
+	}
+	
+	/**
+	 * Returns a named controller.
+	 * 
+	 * @param name The controller to retrieve.
+	 * @return The controller's object, null if not found.
+	 */
+	public Controller getController(String name) {
+		return controllers.get(name);
 	}
 	
 	/**
