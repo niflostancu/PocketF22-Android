@@ -442,6 +442,7 @@ public class DrawText {
 	 *
 	 * @param position The new position to set.
 	 */
+	@SuppressWarnings("unused")
 	public void setStartPosition(Point3D position) {
 		this.startPosition.setCoordinates(position.getX(), position.getY(), position.getZ());
 	}

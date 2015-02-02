@@ -1,5 +1,7 @@
 package ro.pub.dadgm.pf22.render;
 
+import android.view.MotionEvent;
+
 /**
  * Views are classes that render the actual OpenGL scenes. 
  * 
@@ -33,5 +35,15 @@ public interface View {
 	 * @param height The new height.
 	 */
 	public void onResize(int width, int height);
+	
+	/**
+	 * Receives a touchscreen event.
+	 * 
+	 * <p>Warning: This method is executed on the Activity thread!</p> 
+	 * 
+	 * @param e The touch event.
+	 * @return True if the event was handled, false otherwise.
+	 */
+	public boolean onTouchEvent(MotionEvent e);
 	
 }

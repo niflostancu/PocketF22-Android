@@ -4,7 +4,7 @@ import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.objects.ObjectsManager;
 
 /**
- * <p>A drawable HUD component that contains other components (using Composite Pattern).</p>
+ * A drawable HUD component that contains other components (using Composite Pattern).
  * 
  * <p>As the name implies, its contents are to be centered automatically on the X axis.</p>
  */
@@ -17,7 +17,7 @@ public class CenteredContainer extends HUDObject {
 	
 	
 	/**
-	 * Initializes the menu background object.
+	 * Initializes the object.
 	 * 
 	 * @param scene The parent scene object.
 	 * @param tag An optional tag.

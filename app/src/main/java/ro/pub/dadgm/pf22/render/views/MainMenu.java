@@ -2,6 +2,11 @@ package ro.pub.dadgm.pf22.render.views;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.support.annotation.NonNull;
+import android.view.MotionEvent;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.render.Camera;
@@ -16,6 +21,7 @@ import ro.pub.dadgm.pf22.render.objects.hud.MenuTitle;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
+import ro.pub.dadgm.pf22.utils.Point3D;
 
 /**
  * The view for the game's main menu.
@@ -50,11 +56,18 @@ public class MainMenu implements View, Scene3D {
 	 * The shader manager used for this view.
 	 */
 	protected ShaderManager shaderManager;
-
+	
 	/**
 	 * The text drawing library.
 	 */
 	protected DrawText drawText;
+	
+	/**
+	 * Lock used for Activity/Renderer threads synchronization.
+	 * 
+	 * <p>Used to protect the read consistency of the camera and objects collection.</p>
+	 */
+	protected final Object lock = new Object();
 	
 	
 	/**
@@ -153,23 +166,49 @@ public class MainMenu implements View, Scene3D {
 	public void onResize(int width, int height) {
 		GLES20.glViewport(0, 0, width, height);
 		
-		// Create a new perspective projection matrix. The height will stay the same
-		// while the width will vary as per aspect ratio.
 		final float ratio = (float) width / height;
-		camera.setViewportRatio(ratio);
 		float vWidth = 10f * ratio;
 		
-		Matrix.orthoM(camera.getProjectionMatrix(), 0,
+		synchronized (lock) {
+			camera.setViewportDims(width, height);
+			
+			Matrix.orthoM(camera.getProjectionMatrix(), 0,
 				/*left: */ 0, /*right: */ vWidth, 
 				/*bottom: */ 0, /*top: */ 10f, 
 				/*near: */ 0, /*far: */ -10);
-		
-		shaderManager.notifyCameraChanged(camera);
-		
-		// change the background scale of the objects
-		for (HUDObject obj: objects.getObjectsByTag("fullsize")) {
-			obj.setDimensions(vWidth, 10);
+			
+			camera.computeReverseMatrix();
+			
+			shaderManager.notifyCameraChanged(camera);
+			
+			// change the background scale of the objects
+			for (HUDObject obj : objects.getObjectsByTag("fullsize")) {
+				obj.setDimensions(vWidth, 10);
+			}
 		}
+	}
+	
+	@Override
+	public boolean onTouchEvent(@NonNull MotionEvent e) {
+		
+		// capture all DOWN/MOVE/UP touch events
+		if ( e.getAction() == MotionEvent.ACTION_DOWN ||
+				e.getAction() == MotionEvent.ACTION_UP ||
+				e.getAction() == MotionEvent.ACTION_MOVE ) {
+			
+			synchronized (lock) {
+				// convert viewport to world coordinates
+				float[] objCoords = camera.unProjectCoordinates(e.getX(), e.getY());
+				Point3D p = new Point3D(objCoords[0], objCoords[1], objCoords[2]);
+				
+				Logger log = Logger.getLogger("TEST");
+				log.log(Level.INFO, "Object coordinates: " + p.toString());
+			}
+			
+			return true;
+		}
+		
+		return false;
 	}
 	
 	@Override

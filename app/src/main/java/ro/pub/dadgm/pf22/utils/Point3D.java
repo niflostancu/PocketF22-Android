@@ -48,6 +48,7 @@ public class Point3D {
 	 *
 	 * @param x The new X value.
 	 */
+	@SuppressWarnings("unused")
 	public void setX(float x) {
 		this.x = x;
 	}
@@ -66,6 +67,7 @@ public class Point3D {
 	 *
 	 * @param y The new Y value.
 	 */
+	@SuppressWarnings("unused")
 	public void setY(float y) {
 		this.y = y;
 	}
@@ -84,6 +86,7 @@ public class Point3D {
 	 *
 	 * @param z The new Z value.
 	 */
+	@SuppressWarnings("unused")
 	public void setZ(float z) {
 		this.z = z;
 	}
@@ -107,9 +110,11 @@ public class Point3D {
 	 *
 	 * @return A float[] array with the point's coordinates.
 	 */
+	@SuppressWarnings("unused")
 	public float[] toArray() {
 		return new float[] { x, y, z };
 	}
+	
 	
 	@Override
 	public boolean equals(Object obj) {
@@ -128,4 +133,8 @@ public class Point3D {
 		return Math.round(p*p*x + p*y + z);
 	}
 	
+	@Override
+	public String toString() {
+		return "(" + x + ", " + y + ", " + z + ")";
+	}
 }

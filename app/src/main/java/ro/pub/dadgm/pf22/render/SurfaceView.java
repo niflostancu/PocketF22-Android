@@ -3,8 +3,8 @@ package ro.pub.dadgm.pf22.render;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-
-import ro.pub.dadgm.pf22.R;
+import android.support.annotation.NonNull;
+import android.view.MotionEvent;
 
 /**
  * Sets up the OpenGL ES 2.0 drawing context and sets the accompanying {@link GLRenderer} class as 
@@ -54,6 +54,10 @@ public class SurfaceView extends android.opengl.GLSurfaceView {
 		setView(initialView);
 	}
 	
+	@Override
+	public boolean onTouchEvent(@NonNull MotionEvent e) {
+		return currentView != null && currentView.onTouchEvent(e);
+	}
 	
 	/**
 	 * Changes the current view.
