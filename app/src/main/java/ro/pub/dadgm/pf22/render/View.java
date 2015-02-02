@@ -1,9 +1,9 @@
 package ro.pub.dadgm.pf22.render;
 
 /**
- * Defines the interface that all OpenGL MVC View classes must implement.
+ * Views are classes that render the actual OpenGL scenes. 
  * 
- * <p>Views are classes that render the actual OpenGL scenes.</p>
+ * <p>This is the facade interface that the renderer uses (see {@link SurfaceView})</p>
  */
 public interface View {
 	
