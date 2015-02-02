@@ -1,0 +1,122 @@
+package ro.pub.dadgm.pf22.render.utils;
+
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.opengl.GLES20;
+import android.opengl.GLUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import ro.pub.dadgm.pf22.activity.MainActivity;
+
+/**
+ * Utility static class used for loading textures into OpenGL.
+ */
+public class TextureLoader {
+	
+	/**
+	 * Stores already loaded texture files.
+	 * 
+	 * <p>The keys used are: 
+	 * <ul>
+	 *     <li><i>res_{RESOURCEID}</i> - for Android resources</li>
+	 *     <li><i>asset_{ASSET_PATH}</i> - for Android assets</li>
+	 * </ul>
+	 * </p>
+	 */
+	protected static Map<String, Integer> textureCache = new HashMap<>();
+	
+	
+	/**
+	 * Loads the specified bitmap object as GL texture.
+	 * 
+	 * @param bitmap The bitmap to load.
+	 * @return Texture's handle (0 if load failed).
+	 */
+	public static int loadTexture(Bitmap bitmap) {
+		int[] texture = new int[] { 0 };
+		
+		// allocate a texture object
+		GLES20.glGenTextures(1, texture, 0);
+		
+		if (texture[0] != 0) {
+			// bind to the texture
+			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
+			
+			// load the bitmap into the bound texture
+			GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+		}
+		
+		return texture[0];
+	}
+	
+	/**
+	 * Reads and loads a texture bitmap from the specified Android resource ID.
+	 * 
+	 * @param resourceId The ID of the resource to read.
+	 * @return Texture's handle (0 if load failed).
+	 */
+	public static int loadTextureFromResource(int resourceId) {
+		// check the cache if the texture was already loaded
+		String cacheKey = "res_" + resourceId;
+		if (textureCache.containsKey(cacheKey)) {
+			return textureCache.get(cacheKey);
+		}
+		
+		// disable pre-scaling
+		final BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inScaled = false;
+		
+		// open the resource
+		final Bitmap bitmap = BitmapFactory.decodeResource(MainActivity.getAppContext().getResources(), resourceId, options);
+		
+		if (bitmap == null)
+			return 0;
+		
+		// load the texture
+		int texture = loadTexture(bitmap);
+		if (texture != 0) {
+			// add it to cache
+			textureCache.put(cacheKey, texture);
+		}
+		return texture;
+	}
+	
+	/**
+	 * Reads and loads a texture bitmap from the specified Android asset.
+	 * 
+	 * @param path The path of the image asset to load.
+	 * @return Texture's handle (0 if load failed).
+	 */
+	public static int loadTextureFromAsset(String path) {
+		// check the cache if the texture was already loaded
+		String cacheKey = "asset_" + path;
+		if (textureCache.containsKey(cacheKey)) {
+			return textureCache.get(cacheKey);
+		}
+		
+		AssetManager assetManager = MainActivity.getAppContext().getAssets();
+		
+		Bitmap bitmap = null;
+		try {
+			InputStream assetStream = assetManager.open(path);
+			bitmap = BitmapFactory.decodeStream(assetStream);
+			
+		} catch (IOException e) {
+			return 0;
+		}
+		
+		// load the texture
+		int texture = loadTexture(bitmap);
+		if (texture != 0) {
+			// add it to cache
+			textureCache.put(cacheKey, texture);
+		}
+		return texture;
+	}
+	
+}
