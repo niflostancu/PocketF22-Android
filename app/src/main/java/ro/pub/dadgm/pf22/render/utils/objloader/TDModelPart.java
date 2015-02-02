@@ -1,10 +1,8 @@
 package ro.pub.dadgm.pf22.render.utils.objloader;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.Vector;
+
+import ro.pub.dadgm.pf22.render.utils.BufferUtils;
 
 /**
  * Stores a model part.
@@ -12,78 +10,71 @@ import java.util.Vector;
  * <p>Based on http://sourceforge.net/projects/objloaderforand/</p>
  */
 public class TDModelPart {
-	Vector<Short> faces;
-	Vector<Short> vtPointer;
-	Vector<Short> vnPointer;
-	Material material;
-	private FloatBuffer normalBuffer;
-	ShortBuffer faceBuffer;
+	
+	/**
+	 * The part's faces (loaded/converted as triangles).
+	 */
+	protected short[] faces;
+	
+	/**
+	 * An array with texture coordinates' indices the current part. 
+	 */
+	protected short[] vtPointer;
+	
+	/**
+	 * An array with vertex normals' indices for the current part.
+	 */
+	protected short[] vnPointer;
+	
+	/**
+	 * The material to use.
+	 */
+	protected Material material;
 
-	public TDModelPart(Vector<Short> faces, Vector<Short> vtPointer,
-					   Vector<Short> vnPointer, Material material, Vector<Float> vn) {
+	/**
+	 * Buffers to store the indices.
+	 */
+	protected ShortBuffer facesBuf;
+	
+	
+	/**
+	 * Model part constructor.
+	 * 
+	 * @param faces Part's vertex indices array.
+	 * @param vtPointer Texture coordinates' indices array.
+	 * @param vnPointer Vertex normals' indices array.
+	 * @param material The part's associated material, if any.
+	 */
+	public TDModelPart(short[] faces, short[] vtPointer,
+					   short[] vnPointer, 
+					   Material material) {
 		super();
+		
 		this.faces = faces;
 		this.vtPointer = vtPointer;
 		this.vnPointer = vnPointer;
 		this.material = material;
-
-		ByteBuffer byteBuf = ByteBuffer.allocateDirect(vnPointer.size() * 4 * 3);
-		byteBuf.order(ByteOrder.nativeOrder());
-		normalBuffer = byteBuf.asFloatBuffer();
-		for (int i = 0; i < vnPointer.size(); i++) {
-			float x = vn.get(vnPointer.get(i) * 3);
-			float y = vn.get(vnPointer.get(i) * 3 + 1);
-			float z = vn.get(vnPointer.get(i) * 3 + 2);
-			normalBuffer.put(x);
-			normalBuffer.put(y);
-			normalBuffer.put(z);
-		}
-		normalBuffer.position(0);
-
-
-		ByteBuffer fBuf = ByteBuffer.allocateDirect(faces.size() * 2);
-		fBuf.order(ByteOrder.nativeOrder());
-		faceBuffer = fBuf.asShortBuffer();
-		faceBuffer.put(toPrimitiveArrayS(faces));
-		faceBuffer.position(0);
+		
+		// allocate buffers
+		facesBuf = BufferUtils.allocateShortBuffer(faces.length * 2);
+		facesBuf.put(faces);
+		facesBuf.position(0);
 	}
-
-	public String toString() {
-		String str = "";
-		if (material != null)
-			str += "Material name:" + material.getName();
-		else
-			str += "Material not defined!";
-		str += "\nNumber of faces:" + faces.size();
-		str += "\nNumber of vnPointers:" + vnPointer.size();
-		str += "\nNumber of vtPointers:" + vtPointer.size();
-		return str;
-	}
-
+	
+	@SuppressWarnings("unused")
 	public ShortBuffer getFaceBuffer() {
-		return faceBuffer;
+		return facesBuf;
 	}
-
-	public FloatBuffer getNormalBuffer() {
-		return normalBuffer;
-	}
-
-	private static short[] toPrimitiveArrayS(Vector<Short> vector) {
-		short[] s;
-		s = new short[vector.size()];
-		for (int i = 0; i < vector.size(); i++) {
-			s[i] = vector.get(i);
-		}
-		return s;
-	}
-
+	
+	@SuppressWarnings("unused")
 	public int getFacesCount() {
-		return faces.size();
+		return faces.length;
 	}
-
+	
+	@SuppressWarnings("unused")
 	public Material getMaterial() {
 		return material;
 	}
-
-
+	
+	
 }

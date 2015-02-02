@@ -1,9 +1,5 @@
 package ro.pub.dadgm.pf22.render.utils.objloader;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.Arrays;
 
 /**
  * Defines an object's materials (textures / colors).
@@ -11,14 +7,47 @@ import java.util.Arrays;
  * <p>Based on http://sourceforge.net/projects/objloaderforand/</p>
  */
 public class Material {
-	String name;
-	float[] ambientColor;
-	float[] diffuseColor;
-	float[] specularColor;
-	float alpha;
-	float shine;
-	int illum;
-	String textureFile;
+	
+	/**
+	 * The material section's name.
+	 */
+	protected String name;
+	
+	/**
+	 * Ambient (independent) color of the object.
+	 */
+	protected float[] ambientColor;
+	
+	/**
+	 * The diffuse (lambert) color of the object.
+	 */
+	protected float[] diffuseColor;
+	
+	/**
+	 * The specular (reflective) color of the object.
+	 */
+	protected float[] specularColor;
+	
+	/**
+	 * Part's alpha.
+	 */
+	protected float alpha;
+	
+	/**
+	 * The specular shininess of the part.
+	 */
+	protected float shine;
+	
+	/**
+	 * The illumination model to use.
+	 */
+	protected int illum;
+	
+	/**
+	 * The name of the texture file.
+	 */
+	protected String textureFile;
+	
 	
 	public Material(String name) {
 		this.name = name;
@@ -37,16 +66,6 @@ public class Material {
 		return ambientColor;
 	}
 	
-	public FloatBuffer getAmbientColorBuffer() {
-		FloatBuffer f;
-		ByteBuffer b = ByteBuffer.allocateDirect(12);
-		b.order(ByteOrder.nativeOrder());
-		f = b.asFloatBuffer();
-		f.put(ambientColor);
-		f.position(0);
-		return f;
-	}
-	
 	public void setAmbientColor(float r, float g, float b) {
 		ambientColor = new float[3];
 		ambientColor[0] = r;
@@ -59,16 +78,6 @@ public class Material {
 		return diffuseColor;
 	}
 	
-	public FloatBuffer getDiffuseColorBuffer() {
-		FloatBuffer f;
-		ByteBuffer b = ByteBuffer.allocateDirect(12);
-		b.order(ByteOrder.nativeOrder());
-		f = b.asFloatBuffer();
-		f.put(diffuseColor);
-		f.position(0);
-		return f;
-	}
-	
 	public void setDiffuseColor(float r, float g, float b) {
 		diffuseColor = new float[3];
 		diffuseColor[0] = r;
@@ -79,16 +88,6 @@ public class Material {
 	@SuppressWarnings("unused")
 	public float[] getSpecularColor() {
 		return specularColor;
-	}
-	
-	public FloatBuffer getSpecularColorBuffer() {
-		FloatBuffer f;
-		ByteBuffer b = ByteBuffer.allocateDirect(12);
-		b.order(ByteOrder.nativeOrder());
-		f = b.asFloatBuffer();
-		f.put(specularColor);
-		f.position(0);
-		return f;
 	}
 	
 	public void setSpecularColor(float r, float g, float b) {
@@ -138,14 +137,4 @@ public class Material {
 		this.textureFile = textureFile;
 	}
 	
-	public String toString() {
-		String str = "";
-		str += "Material name: " + name;
-		str += "\nAmbient color: " + Arrays.toString(ambientColor);
-		str += "\nDiffuse color: " + Arrays.toString(diffuseColor);
-		str += "\nSpecular color: " + Arrays.toString(specularColor);
-		str += "\nAlpha: " + alpha;
-		str += "\nShine: " + shine;
-		return str;
-	}
 }

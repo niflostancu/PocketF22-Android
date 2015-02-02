@@ -1,10 +1,10 @@
 package ro.pub.dadgm.pf22.render.utils.objloader;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Parses a Wavefront .MTL (Materials) file.
@@ -13,23 +13,20 @@ import java.util.Vector;
  */
 public class MTLParser {
 	
-	public static Vector<Material> loadMTL(String file) {
+	public static Map<String, Material> loadMTL(InputStream inStream) {
 		BufferedReader reader;
-		Vector<Material> materials = new Vector<>();
+		Map<String, Material> materials = new HashMap<>();
 		String line;
 		Material currentMtl = null;
-		try { //try to open file
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-		} catch (IOException e) {
-			throw new RuntimeException("Unable to load materials file " + file + "!", e);
-		}
+		reader = new BufferedReader(new InputStreamReader(inStream));
+		
 		try { // try to read lines of the file
 			while ((line = reader.readLine()) != null) {
+				
 				if (line.startsWith("newmtl")) {
-					if (currentMtl != null)
-						materials.add(currentMtl);
 					String mtName = line.split("[ ]+", 2)[1];
 					currentMtl = new Material(mtName);
+					materials.put(mtName, currentMtl);
 					
 				} else if (line.startsWith("Ka")) {
 					if (currentMtl == null) continue;

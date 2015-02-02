@@ -1,119 +1,150 @@
 package ro.pub.dadgm.pf22.render.utils.objloader;
 
-import android.content.Context;
-import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Loads a Wavefront .OBJ file.
+ * Parses a Wavefront .OBJ file.
  * 
  * <p>Based on http://sourceforge.net/projects/objloaderforand/</p>
  */
 public class OBJParser {
-	Context context;
 	
-	Vector<Short> faces = new Vector<>();
-	Vector<Short> vtPointer = new Vector<>();
-	Vector<Short> vnPointer = new Vector<>();
-	Vector<Float> v = new Vector<>();
-	Vector<Float> vn = new Vector<>();
-	Vector<Float> vt = new Vector<>();
-	Vector<TDModelPart> parts = new Vector<>();
-	// Vector<Material> materials = null;
-
-	public OBJParser(Context ctx) {
-		context = ctx;
+	List<Short> faces = new ArrayList<>();
+	List<Short> vtPointer = new ArrayList<>();
+	List<Short> vnPointer = new ArrayList<>();
+	
+	List<Float> v = new ArrayList<>();
+	List<Float> vn = new ArrayList<>();
+	List<Float> vt = new ArrayList<>();
+	
+	List<TDModelPart> parts = new ArrayList<>();
+	
+	Map<String, Material> materials = null;
+	
+	public OBJParser() {
+		// nothing here
 	}
 	
-	public TDModel parseOBJ(InputStream inStream) {
-		// Material m = null;
+	public TDModel parseOBJ(InputStream inStream, InputStream mtlStream) {
+		Material m = null;
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
 		String line;
 		
 		try { // try to read lines of the file
 			while ((line = reader.readLine()) != null) {
-				Log.v("obj", line);
-				if (line.startsWith("f")) { //a polygonal face
+				
+				if (line.startsWith("f")) { // a polygonal face
 					processFLine(line);
 				} else if (line.startsWith("vn")) {
 					processVNLine(line);
 				} else if (line.startsWith("vt")) {
 					processVTLine(line);
-				} else if (line.startsWith("v")) { //line having geometric position of single vertex
+				} else if (line.startsWith("v")) { // line having geometric position of single vertex
 					processVLine(line);
-				}
-				/*else if(line.startsWith("usemtl")){
-					try{//start of new group
-					if(faces.size()!=0){//if not this is not the start of the first group
-						TDModelPart model=new TDModelPart(faces, vtPointer, vnPointer, m,vn);
+					
+				} else if (line.startsWith("g")) {
+					if (faces.size() > 0) {
+						short[] aFaces = convertToArrayS(faces);
+						short[] aVTPointer = convertToArrayS(vtPointer);
+						short[] aVNPointer = convertToArrayS(vnPointer);
+						
+						TDModelPart model = new TDModelPart(aFaces, aVTPointer, aVNPointer, m);
 						parts.add(model);
 					}
-					String mtlName=line.split("[ ]+",2)[1]; //get the name of the material
-					for(int i=0; i<materials.size(); i++){//suppose .mtl file already parsed
-						m=materials.get(i);
-						if(m.getName().equals(mtlName)){//if found, return from loop
-							break;
-						}
-						m=null;//if material not found, set to null
-					}
-					faces=new Vector<Short>();
-					vtPointer=new Vector<Short>();
-					vnPointer=new Vector<Short>();
-					}
-					catch (Exception e) {
-					}
-				} else if(line.startsWith("mtllib")){
-					materials=MTLParser.loadMTL(line.split("[ ]+")[1]);
-					for(int i=0; i<materials.size(); i++){
-						Material mat=materials.get(i);
-						Log.v("materials",mat.toString());
-					}
-				}*/
+					
+				} else if(line.startsWith("usemtl")){
+					String mtlName = line.split("[ ]+", 2)[1]; // the name of the material
+					m = materials.get(mtlName);
+					faces.clear();
+					vtPointer.clear();
+					vnPointer.clear();
+					
+				} else if (line.startsWith("mtllib")) {
+					materials = MTLParser.loadMTL(mtlStream);
+				}
 			}
+			
 		} catch (IOException e) {
 			throw new RuntimeException("Could not parse the object file!", e);
 		}
 		
-		if (faces != null) { // if not this is not the start of the first group
-			TDModelPart model = new TDModelPart(faces, vtPointer, vnPointer, /* m */ null, vn);
+		if (faces.size() > 0) {
+			short[] aFaces = convertToArrayS(faces);
+			short[] aVTPointer = convertToArrayS(vtPointer);
+			short[] aVNPointer = convertToArrayS(vnPointer);
+			
+			TDModelPart model = new TDModelPart(aFaces, aVTPointer, aVNPointer, m);
 			parts.add(model);
 		}
-		TDModel t = new TDModel(v, vn, vt, parts);
-		t.buildVertexBuffer();
-		Log.v("models", t.toString());
-		return t;
+		
+		float[] aV = convertToArrayF(v);
+		float[] aVn = convertToArrayF(vn);
+		float[] aVt = convertToArrayF(vt);
+		TDModelPart[] aParts = parts.toArray(new TDModelPart[parts.size()]);
+		
+		return new TDModel(aV, aVn, aVt, aParts);
 	}
-
-
+	
+	
+	/**
+	 * Converts the specified Float list to a float[].
+	 * 
+	 * @param floatList The target list to convert.
+	 * @return The resulting float array.
+	 */
+	protected float[] convertToArrayF(List<Float> floatList) {
+		float[] arr = new float[floatList.size()];
+		for (int i=0; i< arr.length; i++)
+			arr[i] = floatList.get(i);
+		
+		return arr;
+	}
+	
+	/**
+	 * Converts the specified Short list to a short[].
+	 *
+	 * @param shortList The target list to convert.
+	 * @return The resulting short array.
+	 */
+	protected short[] convertToArrayS(List<Short> shortList) {
+		short[] arr = new short[shortList.size()];
+		for (int i=0; i< arr.length; i++)
+			arr[i] = shortList.get(i);
+		
+		return arr;
+	}
+	
+	
 	private void processVLine(String line) {
-		String[] tokens = line.split("[ ]+"); //split the line at the spaces
+		String[] tokens = line.split("[ ]+");
 		int c = tokens.length;
-		for (int i = 1; i < c; i++) { //add the vertex to the vertex array
+		for (int i = 1; i < c; i++) {
 			v.add(Float.valueOf(tokens[i]));
 		}
 	}
-
+	
 	private void processVNLine(String line) {
-		String[] tokens = line.split("[ ]+"); //split the line at the spaces
+		String[] tokens = line.split("[ ]+");
 		int c = tokens.length;
-		for (int i = 1; i < c; i++) { //add the vertex to the vertex array
+		for (int i = 1; i < c; i++) {
 			vn.add(Float.valueOf(tokens[i]));
 		}
 	}
-
+	
 	private void processVTLine(String line) {
-		String[] tokens = line.split("[ ]+"); //split the line at the spaces
+		String[] tokens = line.split("[ ]+");
 		int c = tokens.length;
-		for (int i = 1; i < c; i++) { //add the vertex to the vertex array
+		for (int i = 1; i < c; i++) {
 			vt.add(Float.valueOf(tokens[i]));
 		}
 	}
-
+	
 	private void processFLine(String line) {
 		String[] tokens = line.split("[ ]+");
 		int c = tokens.length;
@@ -125,14 +156,17 @@ public class OBJParser {
 					s--;
 					faces.add(s);
 				}
-			} else {//more faces
-				Vector<Short> polygon = new Vector<>();
+				
+			} else { // more faces
+				List<Short> polygon = new ArrayList<>();
 				for (int i = 1; i < tokens.length; i++) {
 					Short s = Short.valueOf(tokens[i]);
 					s--;
 					polygon.add(s);
 				}
-				faces.addAll(Triangulator.triangulate(polygon));//triangulate the polygon and add the resulting faces
+				
+				// triangulate the polygon and add the resulting faces
+				faces.addAll(Triangulator.triangulate(polygon));
 			}
 		}
 		if (tokens[1].matches("[0-9]+/[0-9]+")) {//if: v/vt
@@ -145,9 +179,10 @@ public class OBJParser {
 					s--;
 					vtPointer.add(s);
 				}
-			} else {//triangulate
-				Vector<Short> tmpFaces = new Vector<>();
-				Vector<Short> tmpVt = new Vector<>();
+				
+			} else { // triangulate
+				List<Short> tmpFaces = new ArrayList<>();
+				List<Short> tmpVt = new ArrayList<>();
 				for (int i = 1; i < tokens.length; i++) {
 					Short s = Short.valueOf(tokens[i].split("/")[0]);
 					s--;
@@ -160,7 +195,7 @@ public class OBJParser {
 				vtPointer.addAll(Triangulator.triangulate(tmpVt));
 			}
 		}
-		if (tokens[1].matches("[0-9]+//[0-9]+")) {//f: v//vn
+		if (tokens[1].matches("[0-9]+//[0-9]+")) { // f: v//vn
 			if (c == 4) {//3 faces
 				for (int i = 1; i < c; i++) {
 					Short s = Short.valueOf(tokens[i].split("//")[0]);
@@ -171,8 +206,8 @@ public class OBJParser {
 					vnPointer.add(s);
 				}
 			} else {//triangulate
-				Vector<Short> tmpFaces = new Vector<>();
-				Vector<Short> tmpVn = new Vector<>();
+				List<Short> tmpFaces = new ArrayList<>();
+				List<Short> tmpVn = new ArrayList<>();
 				for (int i = 1; i < tokens.length; i++) {
 					Short s = Short.valueOf(tokens[i].split("//")[0]);
 					s--;
@@ -200,9 +235,9 @@ public class OBJParser {
 					vnPointer.add(s);
 				}
 			} else {//triangulate
-				Vector<Short> tmpFaces = new Vector<>();
-				Vector<Short> tmpVn = new Vector<>();
-				//Vector<Short> tmpVt=new Vector<>();
+				List<Short> tmpFaces = new ArrayList<>();
+				List<Short> tmpVn = new ArrayList<>();
+				//List<Short> tmpVt=new ArrayList<>();
 				for (int i = 1; i < tokens.length; i++) {
 					Short s = Short.valueOf(tokens[i].split("/")[0]);
 					s--;
