@@ -73,4 +73,9 @@ public class MockObject3D implements Object3D {
 	public int getPriority() {
 		return priority;
 	}
+	
+	@Override
+	public void destroy() {
+		// do nothing
+	}
 }

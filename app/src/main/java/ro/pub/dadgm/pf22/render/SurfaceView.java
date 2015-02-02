@@ -2,6 +2,8 @@ package ro.pub.dadgm.pf22.render;
 
 import android.content.Context;
 
+import ro.pub.dadgm.pf22.R;
+
 /**
  * Extends GLSurfaceView and handles view objects rendering.
  */
@@ -11,12 +13,12 @@ public class SurfaceView extends android.opengl.GLSurfaceView {
 	 * The current view that needs to be displayed.
 	 */
 	protected View currentView = null;
-
+	
 	/**
 	 * The GL renderer used for drawing the scene.
 	 */
 	protected GLRenderer renderer;
-
+	
 	/**
 	 * SurfaceView constructor.
 	 * 
@@ -24,15 +26,15 @@ public class SurfaceView extends android.opengl.GLSurfaceView {
 	 */
 	public SurfaceView(Context context) {
 		super(context);
-
+		
 		// Create an OpenGL ES 2.0 context.
 		setEGLContextClientVersion(2);
-
+		
 		// Set the Renderer for drawing on the GLSurfaceView
 		renderer = new GLRenderer();
 		setRenderer(renderer);
 	}
-
+	
 	/**
 	 * Constructor with initial view parameter.
 	 * 
@@ -41,7 +43,7 @@ public class SurfaceView extends android.opengl.GLSurfaceView {
 	 */
 	public SurfaceView(Context context, View initialView) {
 		this(context);
-
+		
 		setView(initialView);
 	}
 	

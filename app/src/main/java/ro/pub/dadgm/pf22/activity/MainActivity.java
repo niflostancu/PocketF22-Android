@@ -11,14 +11,13 @@ import ro.pub.dadgm.pf22.render.SurfaceView;
 import ro.pub.dadgm.pf22.render.View;
 import ro.pub.dadgm.pf22.render.views.MainMenu;
 
-
 public class MainActivity extends ActionBarActivity {
-
+	
 	/**
 	 * The view class for the game's main menu.
 	 */
 	private View mainMenuScene;
-
+	
 	/**
 	 * The GL Renderer to be used for displaying the game screen.
 	 */
@@ -29,7 +28,7 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		
 		appContext = getApplicationContext();
 		
 		// build the main menu view object
@@ -45,7 +44,7 @@ public class MainActivity extends ActionBarActivity {
 		getMenuInflater().inflate(R.menu.menu_main, menu);
 		return true;
 	}
-
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
@@ -57,7 +56,7 @@ public class MainActivity extends ActionBarActivity {
 
 		return super.onOptionsItemSelected(item);
 	}
-
+	
 	/**
 	 * Returns the application's context.
 	 */

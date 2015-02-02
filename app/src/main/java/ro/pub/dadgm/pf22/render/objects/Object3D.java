@@ -42,4 +42,11 @@ public interface Object3D {
 	 */
 	public int getPriority();
 	
+	/**
+	 * Called when the object needs to be destroyed.
+	 * 
+	 * <p>Use this to free any allocated resources (during the constructor / draw methods).</p>
+	 */
+	public void destroy();
+	
 }
