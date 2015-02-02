@@ -41,6 +41,7 @@ public class CenteredContainer extends HUDObject {
 			// center the object
 			float[] dims = object.getDimensions();
 			object.position().setX( position.getX() + (width / 2) - (dims[0] / 2) );
+			object.updateBoundingBox();
 		}
 	}
 	

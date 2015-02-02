@@ -1,5 +1,6 @@
 package ro.pub.dadgm.pf22.render;
 
+import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 
 /**
@@ -44,6 +45,6 @@ public interface View {
 	 * @param e The touch event.
 	 * @return True if the event was handled, false otherwise.
 	 */
-	public boolean onTouchEvent(MotionEvent e);
+	public boolean onTouchEvent(@NonNull MotionEvent e);
 	
 }

@@ -10,22 +10,24 @@ import android.view.WindowManager;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.render.SurfaceView;
-import ro.pub.dadgm.pf22.render.View;
-import ro.pub.dadgm.pf22.render.views.MainMenu;
 
 public class MainActivity extends Activity {
 	
 	/**
 	 * The view class for the game's main menu.
 	 */
-	private View mainMenuScene;
+	private MainMenuController mainMenuController;
 	
 	/**
 	 * The GL Renderer to be used for displaying the game screen.
 	 */
 	private SurfaceView surfaceView;
 	
+	/**
+	 * A singleton field used to store the current Activity's context.
+	 */
 	private static Context appContext = null;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +39,10 @@ public class MainActivity extends Activity {
 		appContext = getApplicationContext();
 		
 		// build the main menu view object
-		mainMenuScene = new MainMenu();
+		mainMenuController = new MainMenuController(this);
 		
-		surfaceView = new SurfaceView(this, mainMenuScene);
+		// initialize the surface
+		surfaceView = new SurfaceView(this, mainMenuController.getView());
 		setContentView(surfaceView);
 	}
 	
@@ -72,6 +75,15 @@ public class MainActivity extends Activity {
 		}
 
 		return super.onOptionsItemSelected(item);
+	}
+
+	/**
+	 * Returns the SurfaceView reference.
+	 * 
+	 * @return A reference to the OpenGL surface view object.
+	 */
+	public SurfaceView getSurfaceView() {
+		return surfaceView;
 	}
 	
 	/**

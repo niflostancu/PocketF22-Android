@@ -79,6 +79,7 @@ public class Camera {
 		// map from window coordinates to NDC coordinates
 		inVec[0] = (inVec[0] / viewportDims[0]) * 2.0f - 1.0f;
 		inVec[1] = (inVec[1] / viewportDims[1]) * 2.0f - 1.0f;
+		inVec[1] = -inVec[1];
 		
 		// get the output coordinates
 		float[] outVec = new float[4];

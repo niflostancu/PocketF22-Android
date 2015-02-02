@@ -587,7 +587,7 @@ public class DrawText {
 			Matrix.setIdentityM(workModelMatrix, 0);
 			Matrix.translateM(workModelMatrix, 0,
 					startPosition.getX(), startPosition.getY(), startPosition.getZ());
-			Matrix.scaleM(workModelMatrix, 0, 1f / currentFont.maxHeight * scale, 1f / currentFont.maxHeight * scale, 1);
+			Matrix.scaleM(workModelMatrix, 0, getModelScale(), getModelScale(), 1);
 			
 			// get shader attributes' locations
 			int a_position = shader.getAttribLocation("a_position");
@@ -645,6 +645,17 @@ public class DrawText {
 		}
 		
 		return width;
+	}
+
+	/**
+	 * Returns the scale of the model transformation.
+	 * 
+	 * <p>Useful to compute the world-space width of the text.</p>
+	 * 
+	 * @return The model scale factor.
+	 */
+	public float getModelScale() {
+		return 1f / currentFont.maxHeight * scale;
 	}
 	
 	/**
