@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -49,12 +50,14 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		appContext = getApplicationContext();
+
+		Log.d(MainActivity.class.getSimpleName(), "Initializing activity...");
 		
 		// initialize the game's objects
 		game = null;
 		if (savedInstanceState != null) {
 			game = (Game) savedInstanceState.getSerializable("gameObj");
-			
+			Log.d(MainActivity.class.getSimpleName(), "Loaded saved Game object.");
 		}
 		if (game == null)
 			game = new Game();
@@ -74,11 +77,16 @@ public class MainActivity extends Activity {
 		// activate the game
 		switch (game.getStatus()) {
 			case STOPPED: // show the main menu
+				Log.d(MainActivity.class.getSimpleName(), "Game status before activity was stopped: stopped.");
 				mainMenu.activate();
 				break;
 			
-			case RUNNING: 
+			case RUNNING:
+				Log.d(MainActivity.class.getSimpleName(), "Game status before activity was stopped: running.");
+				gameScene.activate();
+				break;
 			case PAUSED: // show the game scene
+				Log.d(MainActivity.class.getSimpleName(), "Game status before activity was stopped: paused.");
 				gameScene.activate();
 				break;
 		}
@@ -87,6 +95,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
+		Log.d(MainActivity.class.getSimpleName(), "Activity paused.");
 		surfaceView.onPause();
 	}
 	
@@ -94,13 +103,14 @@ public class MainActivity extends Activity {
 	protected void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
 		// serialize the Game model
 		savedInstanceState.putSerializable("gameObject", game);
-		
+		Log.d(MainActivity.class.getSimpleName(), "Activity instance saved.");
 		super.onSaveInstanceState(savedInstanceState);
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
+		Log.d(MainActivity.class.getSimpleName(), "Activity resumed.");
 		surfaceView.onResume();
 	}
 	

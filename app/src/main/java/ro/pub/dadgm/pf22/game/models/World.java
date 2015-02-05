@@ -21,7 +21,7 @@ import ro.pub.dadgm.pf22.utils.events.CollectionListener;
  * <p>This class acts as a container of other model objects and manages them. 
  * All methods are thread-safe and can be called from any thread (unless otherwise noted).</p>
  */
-public class World {
+public class World extends BaseModel {
 	
 	// several constants
 	
@@ -84,12 +84,12 @@ public class World {
 	/**
 	 * Used to allow listening to the enemy planes collection changes.
 	 */
-	protected final List<CollectionListener<EnemyPlane>> enemyCollectionListeners;
+	protected transient final List<CollectionListener<EnemyPlane>> enemyCollectionListeners;
 	
 	/**
 	 * Used to allow listening to the projectiles collection changes.
 	 */
-	protected final List<CollectionListener<Projectile>> projectileCollectionListeners;
+	protected transient final List<CollectionListener<Projectile>> projectileCollectionListeners;
 	
 	
 	/**
@@ -112,6 +112,11 @@ public class World {
 				new ConcurrentHashMap<MobileObject, Boolean>());
 		collidableObjects = Collections.newSetFromMap(
 				new ConcurrentHashMap<CollisionObject, Boolean>());
+		
+		// add the fixed objects for physics simulation
+		mobileObjects.add(player);
+		collidableObjects.add(terrain);
+		collidableObjects.add(player);
 	}
 	
 	

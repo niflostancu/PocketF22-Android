@@ -1,5 +1,7 @@
 package ro.pub.dadgm.pf22.utils;
 
+import java.io.Serializable;
+
 /**
  * Stores the X, Y, Z coordinates of a 3D point.
  * 
@@ -9,7 +11,7 @@ package ro.pub.dadgm.pf22.utils;
  * 
  * <p>Has {@link Object#equals} and {@link Object#hashCode} overrides.</p>
  */
-public class Point3D {
+public class Point3D implements Serializable {
 	/**
 	 * The 3D coordinates of the point.
 	 */

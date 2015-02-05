@@ -1,5 +1,7 @@
 package ro.pub.dadgm.pf22.utils;
 
+import java.io.Serializable;
+
 /**
  * Defines a 3D vector (used to represent velocity in physics, for example).
  * 
@@ -9,7 +11,7 @@ package ro.pub.dadgm.pf22.utils;
  * 
  * <p>The class also implements several vector operations.</p>
  */
-public class Vector3D {
+public class Vector3D implements Serializable {
 	
 	/**
 	 * The values of the vector.
@@ -161,7 +163,7 @@ public class Vector3D {
 		setY(getY() - vec2.getY());
 		setZ(getZ() - vec2.getZ());
 	}
-
+	
 	/**
 	 * Calculates the length of the vector (square root of the dot product with itself).
 	 * 
@@ -180,6 +182,14 @@ public class Vector3D {
 	@SuppressWarnings("unused")
 	public synchronized float dotProduct(Vector3D vec2) {
 		return ( getX()*vec2.getX() + getY()*vec2.getY() + getZ()*vec2.getZ() );
+	}
+	
+	/**
+	 * Normalizes the vector.
+	 */
+	public synchronized void normalize() {
+		float length = length();
+		setValues(getX() / length, getY() / length, getZ() / length);
 	}
 	
 	/**
