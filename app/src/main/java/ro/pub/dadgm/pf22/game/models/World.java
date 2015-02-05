@@ -30,13 +30,13 @@ public class World extends BaseModel {
 	 * 
 	 * <p>Warning: their product must be smaller than the maximum value of a unsigned short (65536)!</p>
 	 */
-	public static int WORLD_WIDTH_X = 250;
-	public static int WORLD_WIDTH_Y = 250;
+	public static int WORLD_WIDTH_X = 50;
+	public static int WORLD_WIDTH_Y = 50;
 	
 	/**
 	 * Maximum world's height.
 	 */
-	public static float WORLD_MAX_HEIGHT = 120.0f;
+	public static float WORLD_MAX_HEIGHT = 30.0f;
 	
 	
 	// world components
@@ -97,7 +97,7 @@ public class World extends BaseModel {
 	 */
 	public World() {
 		// generate the terrain
-		terrain = new Terrain(WORLD_WIDTH_X, WORLD_WIDTH_Y, WORLD_MAX_HEIGHT * 0.5f);
+		terrain = new Terrain(WORLD_WIDTH_X, WORLD_WIDTH_Y, WORLD_MAX_HEIGHT * 0.2f);
 		
 		player = new PrimaryPlane();
 		

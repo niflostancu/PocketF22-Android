@@ -22,7 +22,6 @@ import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
-import ro.pub.dadgm.pf22.utils.Point3D;
 
 /**
  * The view for the game's 3D scene.
@@ -77,7 +76,7 @@ public class GameScene implements View {
 	/**
 	 * The global light's position.
 	 */
-	public static final float[] LIGHT_POSITION = { World.WORLD_WIDTH_Y / 2, World.WORLD_WIDTH_X / 2, World.WORLD_MAX_HEIGHT * 2 };
+	public static final float[] LIGHT_POSITION = { World.WORLD_WIDTH_X / 2, World.WORLD_WIDTH_Y / 2, World.WORLD_MAX_HEIGHT * 2 };
 	
 	/**
 	 * The list of HUD shaders to register.
@@ -299,7 +298,7 @@ public class GameScene implements View {
 			// update the 3D camera
 			//Matrix.frustumM(camera.getProjectionMatrix(), 0,
 			//		-ratio, ratio, -1f, 1f, 2f, 100f );
-			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 1f, 300f);
+			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 0.001f, 100f);
 			
 			updateCamera();
 		}
@@ -425,7 +424,7 @@ public class GameScene implements View {
 		float[] position = player.getPosition().toArray();
 		
 		// compute camera's facing direction
-		float[] initialPoint = new float[] { -2, 0, 1, 1 };
+		float[] initialPoint = new float[] { -0.002f, 0, 0.001f, 1 };
 		float[] resPoint = new float[4];
 		
 		// set the camera to a position around the player's plane
@@ -441,7 +440,7 @@ public class GameScene implements View {
 		
 		Matrix.setLookAtM(camera.getViewMatrix(), 0, 
 				resPoint[0], resPoint[1], resPoint[2],
-				position[0], position[1], position[2] + 0.5f, 
+				position[0], position[1], position[2] + 0.0005f, 
 				0f, 0.0f, 1.0f );
 		
 		shaderManager3D.notifyCameraChanged(camera);

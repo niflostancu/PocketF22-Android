@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		appContext = getApplicationContext();
-
+		
 		Log.d(MainActivity.class.getSimpleName(), "Initializing activity...");
 		
 		// initialize the game's objects

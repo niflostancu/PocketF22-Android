@@ -127,7 +127,7 @@ public class Terrain3D extends AbstractObject3D {
 				if (texture == 0)
 					throw new RuntimeException("Unable to load texture file '" + textureFile + "'!");
 				
-				GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+				// GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
 				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);

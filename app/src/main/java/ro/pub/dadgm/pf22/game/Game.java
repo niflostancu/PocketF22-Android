@@ -131,8 +131,8 @@ public class Game implements Serializable {
 		player.getPosition().setCoordinates(
 				(float) Math.random() * (World.WORLD_WIDTH_X / 2) + World.WORLD_WIDTH_X / 4,
 				(float) Math.random() * (World.WORLD_WIDTH_Y / 2) + World.WORLD_WIDTH_Y / 4,
-				(float) Math.random() * (World.WORLD_MAX_HEIGHT - terrain.getMaxHeight() - 5) + 
-						terrain.getMaxHeight() + 5.0f );
+				/*(float) Math.random() * (World.WORLD_MAX_HEIGHT/3 - terrain.getMaxHeight()) + 
+						terrain.getMaxHeight()*/ terrain.getMaxHeight() + 2f );
 		
 		// TODO: generate the enemy planes
 		

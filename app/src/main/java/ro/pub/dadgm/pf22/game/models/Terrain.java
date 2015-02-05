@@ -157,8 +157,8 @@ public class Terrain extends BaseModel implements CollisionObject {
 		}
 		
 		// apply a Gaussian Blur on the heightmap to smoothen it
-		float[][] kernel = makeGaussianKernel(11, 30);
-		heightMap = convolutionFilter(heightMap, kernel, 1, 0, maxHeight);
+		//float[][] kernel = makeGaussianKernel(11, 30);
+		//heightMap = convolutionFilter(heightMap, kernel, 1, 0, maxHeight);
 		
 		// calculate the maximum generated height
 		maxHeight = 0;

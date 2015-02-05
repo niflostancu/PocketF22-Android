@@ -14,7 +14,7 @@ public class EnemyPlane extends Plane {
 	public EnemyPlane() {
 		// set the plane facing a random direction with a speed of "5"
 		steer((float)Math.random()*360);
-		setSpeed(5);
+		setSpeed(0.4f);
 	}
 	
 	

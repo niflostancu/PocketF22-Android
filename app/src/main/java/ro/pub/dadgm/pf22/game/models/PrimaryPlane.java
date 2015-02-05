@@ -14,8 +14,8 @@ public class PrimaryPlane extends Plane {
 	public PrimaryPlane() {
 		// set the plane facing a random direction with a speed of "5"
 		steer((float)Math.random()*360);
-		setSpeed(10);
-		setPitch(-45);
+		setSpeed(0.5f);
+		// setPitch(-45);
 	}
 	
 	
