@@ -29,6 +29,11 @@ public class MainMenuController implements Controller {
 	 */
 	protected final HashMap<String, View.OnClickListener> actions;
 	
+	/**
+	 * The game object.
+	 */
+	protected final Game game;
+	
 	
 	/**
 	 * Controller object constructor.
@@ -36,6 +41,7 @@ public class MainMenuController implements Controller {
 	public MainMenuController(final MainActivity mainActivity) {
 		this.mainActivity = mainActivity;
 		this.view = new MainMenu(this);
+		this.game = mainActivity.getGame();
 		
 		actions = new HashMap<>();
 		
@@ -43,6 +49,7 @@ public class MainMenuController implements Controller {
 		actions.put("start_game", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				game.start();
 				mainActivity.getController("game_scene").activate();
 			}
 		});
@@ -50,21 +57,28 @@ public class MainMenuController implements Controller {
 		actions.put("toggle_difficulty", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO
+				switch (game.getDifficulty()) {
+					case EASY: game.setDifficulty(Game.Difficulty.MEDIUM);
+						break;
+					case MEDIUM: game.setDifficulty(Game.Difficulty.HARD);
+						break;
+					case HARD: game.setDifficulty(Game.Difficulty.EASY);
+						break;
+				}
 			}
 		});
 		
 		actions.put("toggle_sound", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO
+				game.setSound(!game.getSound());
 			}
 		});
 		
 		actions.put("about", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO
+				// nahhh
 			}
 		});
 	}
@@ -100,7 +114,7 @@ public class MainMenuController implements Controller {
 	 * @return Reference to the Game model object.
 	 */
 	public Game getGame() {
-		return mainActivity.getGame();
+		return game;
 	}
 	
 }

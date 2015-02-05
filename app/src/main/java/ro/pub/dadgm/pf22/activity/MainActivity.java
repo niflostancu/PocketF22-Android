@@ -3,6 +3,7 @@ package ro.pub.dadgm.pf22.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -50,7 +51,14 @@ public class MainActivity extends Activity {
 		appContext = getApplicationContext();
 		
 		// initialize the game's objects
-		game = new Game();
+		game = null;
+		if (savedInstanceState != null) {
+			game = (Game) savedInstanceState.getSerializable("gameObj");
+			
+		}
+		if (game == null)
+			game = new Game();
+		
 		
 		// build the controller objects
 		MainMenuController mainMenu = new MainMenuController(this);
@@ -60,14 +68,34 @@ public class MainActivity extends Activity {
 		controllers.put("game_scene", gameScene);
 		
 		// initialize the surface
-		surfaceView = new SurfaceView(this, mainMenu.getView());
+		surfaceView = new SurfaceView(this, null);
 		setContentView(surfaceView);
+		
+		// activate the game
+		switch (game.getStatus()) {
+			case STOPPED: // show the main menu
+				mainMenu.activate();
+				break;
+			
+			case RUNNING: 
+			case PAUSED: // show the game scene
+				gameScene.activate();
+				break;
+		}
 	}
 	
 	@Override
 	protected void onPause() {
 		super.onPause();
 		surfaceView.onPause();
+	}
+	
+	@Override
+	protected void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
+		// serialize the Game model
+		savedInstanceState.putSerializable("gameObject", game);
+		
+		super.onSaveInstanceState(savedInstanceState);
 	}
 	
 	@Override

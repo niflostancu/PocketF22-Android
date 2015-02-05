@@ -2,6 +2,8 @@ package ro.pub.dadgm.pf22.game;
 
 import android.util.Log;
 
+import java.io.Serializable;
+
 import ro.pub.dadgm.pf22.game.models.*;
 import ro.pub.dadgm.pf22.physics.CollisionObject;
 import ro.pub.dadgm.pf22.physics.MobileObject;
@@ -14,7 +16,7 @@ import ro.pub.dadgm.pf22.physics.PhysicsThread;
  * <p>The game must be started by calling the {@link #start} method and can be stopped by calling the 
  * {@link #stop} method.</p>
  */
-public class Game {
+public class Game implements Serializable {
 	
 	/**
 	 * Defines the game's possible states.
@@ -49,7 +51,12 @@ public class Game {
 	 * The difficulty of the game.
 	 */
 	protected Difficulty difficulty;
-
+	
+	/**
+	 * Sound status (on / off).
+	 */
+	protected boolean sound;
+	
 	/**
 	 * The current score.
 	 */
@@ -58,7 +65,7 @@ public class Game {
 	/**
 	 * The simulation thread of the Physics module.
 	 */
-	protected PhysicsThread physicsThread;
+	protected transient PhysicsThread physicsThread;
 	
 	
 	/**
@@ -68,6 +75,7 @@ public class Game {
 	 */
 	public Game() {
 		status = GameStatus.STOPPED;
+		sound = true;
 	}
 	
 	
@@ -77,12 +85,20 @@ public class Game {
 	 * <p>The instance parameters can't be changed once the game is running!</p>
 	 */
 	public void start() {
-		if (status != GameStatus.RUNNING)
+		if (status == GameStatus.RUNNING)
 			return;
 		
 		if (status == GameStatus.PAUSED) {
+			initializeTransientObjects();
+			
 			// unsleep the threads and continue
-			physicsThread.resumeProcessing();
+			if (physicsThread.isAlive()) {
+				physicsThread.resumeProcessing();
+				
+			} else {
+				// cold start
+				physicsThread.start();
+			}
 			
 			status = GameStatus.RUNNING;
 			return;
@@ -103,15 +119,24 @@ public class Game {
 		
 		// TODO: generate the enemy planes
 		
-		// initialize the Physics module
-		physicsThread = new PhysicsThread(world.getMobileObjects(), world.getCollidableObjects(), new PhysicsListener());
 		
-		// TODO: initialize the AI module
+		initializeTransientObjects();
 		
 		// the game is on!
 		physicsThread.start();
 		
 		status = GameStatus.RUNNING;
+	}
+	
+	/**
+	 * [Re]Initializes the transient objects that can't be serialized.
+	 */
+	protected void initializeTransientObjects() {
+		// initialize the Physics module
+		if (physicsThread == null)
+			physicsThread = new PhysicsThread(world.getMobileObjects(), world.getCollidableObjects(), new PhysicsListener());
+		
+		// TODO: initialize the AI module
 	}
 	
 	/**
@@ -131,6 +156,7 @@ public class Game {
 			Log.e(Game.class.getSimpleName(), "Thread interrupted!", e);
 		}
 		
+		physicsThread = null;
 		world = null;
 		
 		status = GameStatus.STOPPED;
@@ -158,6 +184,33 @@ public class Game {
 	 */
 	public float getScore() {
 		return score;
+	}
+	
+	/**
+	 * Returns game's status (running / stopped / paused).
+	 * 
+	 * @return Game's status.
+	 */
+	public GameStatus getStatus() {
+		return status;
+	}
+	
+	/**
+	 * Returns whether the sound is enabled.
+	 * 
+	 * @return Game sound status.
+	 */
+	public boolean getSound() {
+		return sound;
+	}
+	
+	/**
+	 * Toggles game sound status.
+	 * 
+	 * @param status The new status to set.
+	 */
+	public void setSound(boolean status) {
+		sound = status;
 	}
 	
 	/**

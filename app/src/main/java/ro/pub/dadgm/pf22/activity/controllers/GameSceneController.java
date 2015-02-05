@@ -7,7 +7,6 @@ import java.util.HashMap;
 import ro.pub.dadgm.pf22.activity.Controller;
 import ro.pub.dadgm.pf22.activity.MainActivity;
 import ro.pub.dadgm.pf22.game.Game;
-import ro.pub.dadgm.pf22.game.models.World;
 import ro.pub.dadgm.pf22.render.views.GameScene;
 
 /**
