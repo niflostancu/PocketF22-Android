@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.Serializable;
 
+import ro.pub.dadgm.pf22.activity.MainActivity;
 import ro.pub.dadgm.pf22.game.models.*;
 import ro.pub.dadgm.pf22.physics.CollisionObject;
 import ro.pub.dadgm.pf22.physics.MobileObject;
@@ -63,6 +64,11 @@ public class Game implements Serializable {
 	protected float score;
 	
 	/**
+	 * The parent activity.
+	 */
+	protected transient MainActivity activity;
+	
+	/**
 	 * The simulation thread of the Physics module.
 	 */
 	protected transient PhysicsThread physicsThread;
@@ -78,6 +84,17 @@ public class Game implements Serializable {
 		sound = true;
 	}
 	
+	
+	/**
+	 * Injects the parent activity dependency into the current Game instance.
+	 * 
+	 * <p>Must be called before anything else (especially start)</p>
+	 * 
+	 * @param activity The parent activity.
+	 */
+	public void injectActivity(MainActivity activity) {
+		this.activity = activity;
+	}
 	
 	/**
 	 * Starts/unpauses the current game.
@@ -142,7 +159,7 @@ public class Game implements Serializable {
 	/**
 	 * Stops the game, deallocating all the resources used (the simulation Threads, for example). 
 	 */
-	public void stop() {
+	public synchronized void stop() {
 		if (status == GameStatus.STOPPED)
 			return;
 		
@@ -165,13 +182,22 @@ public class Game implements Serializable {
 	/**
 	 * Pauses the game.
 	 */
-	public void pause() {
+	public synchronized void pause() {
 		if (status != GameStatus.RUNNING)
 			return;
 		
 		physicsThread.pauseProcessing();
 		
 		status = GameStatus.PAUSED;
+	}
+	
+	/**
+	 * Runs a task on the Activity's UI thread.
+	 * 
+	 * @param task The task to run.
+	 */
+	public void runHandler(Runnable task) {
+		activity.runOnUiThread(task);
 	}
 	
 	
@@ -245,6 +271,49 @@ public class Game implements Serializable {
 		return world;
 	}
 	
+	/**
+	 * Destroys the specified plane object.
+	 * 
+	 * @param plane The plane to destroy.
+	 */
+	protected void destroyObject(Plane plane) {
+		if (plane == world.getPlayer()) {
+			// if the plane is the current player, the game is over
+			stop();
+			
+		} else if (plane instanceof EnemyPlane) {
+			world.removePlane((EnemyPlane)plane);
+		}
+		// some explosion animations, maybe?
+	}
+	
+	/**
+	 * Destroys the specified projectile object.
+	 * 
+	 * @param projectile The projectile object to destroy.
+	 */
+	protected void destroyObject(Projectile projectile) {
+		world.removeProjectile(projectile);
+	}
+
+	/**
+	 * Processes (most likely, deletes) the specified object after a collision collided.
+	 * 
+	 * @param obj The object to process.
+	 */
+	protected void processCollision(CollisionObject obj) {
+		if (obj instanceof Plane) {
+			destroyObject((Plane)obj);
+			
+		} else if (obj instanceof Projectile) {
+			destroyObject((Projectile)obj);
+			
+		} /* else if (obj instanceof Terrain) {
+			// the Terrain is indestructible
+			return;
+		} */
+		// else: unknown object, do nothing
+	}
 	
 	/**
 	 * Physics listener implementation for the current game instance.
@@ -252,13 +321,68 @@ public class Game implements Serializable {
 	protected class PhysicsListener implements PhysicsSimulationListener {
 		
 		@Override
-		public void onObjectPositionChange(MobileObject object) {
-			// TODO check object's bounds
+		public void onObjectPositionChange(final MobileObject object) {
+			runHandler(new Runnable() {
+				@Override
+				public void run() {
+					// check object's bounds
+					float[] position = object.getPosition().toArray();
+					int[] dimensions = world.getTerrain().getDimensions();
+					
+					// clamp the position
+					if (position[0] < 0 || position[1] < 0 ||
+							position[0] >= dimensions[0] || position[1] >= dimensions[1]) {
+						if (object instanceof Plane) {
+							Plane planeObject = (Plane)object;
+							
+							// reflect the plane
+							if (position[0] < 0) {
+								planeObject.getPosition().setX(0.1f);
+								planeObject.steer(120);
+							}
+							if (position[1] < 0) {
+								planeObject.getPosition().setY(0.1f);
+								planeObject.steer(120);
+							}
+							if (position[0] >= dimensions[0]) {
+								planeObject.getPosition().setX(dimensions[0]-0.1f);
+								planeObject.steer(120);
+							}
+							if (position[1] >= dimensions[1]) {
+								planeObject.getPosition().setY(dimensions[1]-0.1f);
+								planeObject.steer(120);
+							}
+							
+						} else if (object instanceof Projectile) {
+							// destroy/hide the projectile
+							destroyObject((Projectile)object);
+						}
+					}
+					
+					if (position[2] >= World.WORLD_MAX_HEIGHT) {
+						if (object instanceof Plane) {
+							// clamp the object's height
+							object.getPosition().setZ(World.WORLD_MAX_HEIGHT);
+							((Plane)object).setPitch(-45);
+							
+						} else if (object instanceof Projectile) {
+							// destroy/hide the projectile
+							destroyObject((Projectile)object);
+						}
+					}
+				}
+			});
 		}
 		
 		@Override
-		public void onCollisionDetected(CollisionObject obj1, CollisionObject obj2) {
-			// TODO: destroy an object!
+		public void onCollisionDetected(final CollisionObject obj1, final CollisionObject obj2) {
+			runHandler(new Runnable() {
+				@Override
+				public void run() {
+					processCollision(obj1);
+					processCollision(obj2);
+				}
+			});
 		}
 	}
 	

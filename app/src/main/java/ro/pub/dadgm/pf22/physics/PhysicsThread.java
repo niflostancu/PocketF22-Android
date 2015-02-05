@@ -87,7 +87,7 @@ public class PhysicsThread extends Thread {
 		lastTime = System.nanoTime();
 		
 		// simulation loop
-		while (!Thread.interrupted()) {
+		while (!Thread.currentThread().interrupted()) {
 			int td;
 			
 			synchronized (this) {
@@ -119,7 +119,7 @@ public class PhysicsThread extends Thread {
 			for (int i = 0; i < collidableObjectsSnapshot.length; i++) {
 				for (int j = i + 1; j < collidableObjectsSnapshot.length; j++) {
 					if (collidableObjectsSnapshot[i].collidesWith(collidableObjectsSnapshot[j])) {
-						// throw an event
+						// return an event
 						listener.onCollisionDetected(collidableObjectsSnapshot[i], collidableObjectsSnapshot[j]);
 					}
 				}
@@ -130,7 +130,7 @@ public class PhysicsThread extends Thread {
 				sleep(PHYSICS_SIMULATION_PERIOD, 0);
 				
 			} catch (InterruptedException e) {
-				// nothing
+				Thread.currentThread().interrupt();
 			}
 		}
 	}

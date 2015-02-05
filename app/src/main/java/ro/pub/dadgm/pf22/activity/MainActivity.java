@@ -62,6 +62,8 @@ public class MainActivity extends Activity {
 		if (game == null)
 			game = new Game();
 		
+		game.injectActivity(this);
+		
 		
 		// build the controller objects
 		MainMenuController mainMenu = new MainMenuController(this);

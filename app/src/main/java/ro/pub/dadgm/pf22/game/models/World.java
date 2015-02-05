@@ -36,7 +36,7 @@ public class World extends BaseModel {
 	/**
 	 * Maximum world's height.
 	 */
-	public static float WORLD_MAX_HEIGHT = 80.0f;
+	public static float WORLD_MAX_HEIGHT = 120.0f;
 	
 	
 	// world components
@@ -97,7 +97,7 @@ public class World extends BaseModel {
 	 */
 	public World() {
 		// generate the terrain
-		terrain = new Terrain(WORLD_WIDTH_X, WORLD_WIDTH_Y, WORLD_MAX_HEIGHT * 0.75f);
+		terrain = new Terrain(WORLD_WIDTH_X, WORLD_WIDTH_Y, WORLD_MAX_HEIGHT * 0.5f);
 		
 		player = new PrimaryPlane();
 		

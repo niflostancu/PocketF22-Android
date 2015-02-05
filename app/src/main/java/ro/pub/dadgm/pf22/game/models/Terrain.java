@@ -498,7 +498,23 @@ public class Terrain extends BaseModel implements CollisionObject {
 	
 	@Override
 	public boolean collidesWith(CollisionObject obj) {
-		// TODO implement this
+		if (obj instanceof BaseMobileModel) {
+			BaseMobileModel mobileObj = (BaseMobileModel)obj;
+			
+			// get the elevation at the specified position
+			float[] position = mobileObj.getPosition().toArray();
+			if (position[0] < 0 || position[1] < 0 || 
+					position[0] >= dimensions[0] || position[1] >= dimensions[1]) {
+				// out of bounds, so it can't collide
+				return false;
+			}
+			
+			float height = heightMap[(int)position[0]][(int)position[0]];
+			if (position[2] <= height) {
+				return true;
+			}
+		}
+		
 		return false;
 	}
 	
