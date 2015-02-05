@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import ro.pub.dadgm.pf22.activity.Controller;
 import ro.pub.dadgm.pf22.activity.MainActivity;
+import ro.pub.dadgm.pf22.game.Game;
 import ro.pub.dadgm.pf22.render.views.MainMenu;
 
 /**
@@ -88,6 +89,18 @@ public class MainMenuController implements Controller {
 	@Override
 	public void queueEvent(Runnable worker) {
 		mainActivity.getSurfaceView().queueEvent(worker);
+	}
+	
+	
+	// getters / setters
+	
+	/**
+	 * Returns the Game's model object.
+	 *
+	 * @return Reference to the Game model object.
+	 */
+	public Game getGame() {
+		return mainActivity.getGame();
 	}
 	
 }

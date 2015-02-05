@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
+import ro.pub.dadgm.pf22.game.Game;
 import ro.pub.dadgm.pf22.game.models.PrimaryPlane;
 import ro.pub.dadgm.pf22.game.models.World;
 import ro.pub.dadgm.pf22.render.Camera;
@@ -231,7 +232,8 @@ public class GameScene implements View {
 			shaderManagerHUD.registerShader(name, vertexRes, fragmentRes);
 		}
 		
-		World world = controller.getWorld();
+		Game game = controller.getGame();
+		World world = game.getWorld();
 		PrimaryPlane player = world.getPlayer();
 		
 		// initialize the scene objects

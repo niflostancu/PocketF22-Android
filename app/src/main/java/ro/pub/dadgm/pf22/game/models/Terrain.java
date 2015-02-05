@@ -475,6 +475,14 @@ public class Terrain extends BaseModel implements CollisionObject {
 		return typeCount;
 	}
 	
+	/**
+	 * Returns the guaranteed maximum height of a point on the terrain.
+	 * 
+	 * @return The maximum height of a generated point.
+	 */
+	public synchronized float getMaxHeight() {
+		return maxHeight;
+	}
 	
 	@Override
 	public boolean collidesWith(CollisionObject obj) {

@@ -14,6 +14,7 @@ import java.util.Map;
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
 import ro.pub.dadgm.pf22.activity.controllers.MainMenuController;
+import ro.pub.dadgm.pf22.game.Game;
 import ro.pub.dadgm.pf22.render.SurfaceView;
 
 public class MainActivity extends Activity {
@@ -33,6 +34,11 @@ public class MainActivity extends Activity {
 	 */
 	private static Context appContext = null;
 	
+	/**
+	 * Stores the Game object that controls the game.
+	 */
+	private Game game;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +48,9 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		appContext = getApplicationContext();
+		
+		// initialize the game's objects
+		game = new Game();
 		
 		// build the controller objects
 		MainMenuController mainMenu = new MainMenuController(this);
@@ -77,14 +86,15 @@ public class MainActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-
+		
 		//noinspection SimplifiableIfStatement
 		if (id == R.id.action_settings) {
 			return true;
 		}
-
+		
 		return super.onOptionsItemSelected(item);
 	}
+	
 	
 	/**
 	 * Returns the SurfaceView reference.
@@ -106,9 +116,19 @@ public class MainActivity extends Activity {
 	}
 	
 	/**
+	 * Returns the current Game model object.
+	 * 
+	 * @return The game model.
+	 */
+	public Game getGame() {
+		return game;
+	}
+	
+	/**
 	 * Returns the application's context.
 	 */
 	public static Context getAppContext() {
 		return appContext;
 	}
+	
 }

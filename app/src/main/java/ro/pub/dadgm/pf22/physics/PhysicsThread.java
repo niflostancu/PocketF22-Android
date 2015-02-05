@@ -1,7 +1,5 @@
 package ro.pub.dadgm.pf22.physics;
 
-import android.util.Log;
-
 import java.util.Set;
 
 import ro.pub.dadgm.pf22.utils.Vector3D;
@@ -48,6 +46,21 @@ public class PhysicsThread extends Thread {
 	 */
 	protected final PhysicsSimulationListener listener;
 	
+	/**
+	 * Stores whether the Physics thread is paused.
+	 */
+	protected boolean paused;
+	
+	/**
+	 * The last time (in system ticks) the objects were simulated.
+	 */
+	protected long lastTime;
+	
+	/**
+	 * The time already elapsed when this thread was paused.
+	 */
+	protected long pausedTimeElapsed;
+	
 	
 	/**
 	 * Initializes the physics simulation for the specified set of objects.
@@ -61,6 +74,7 @@ public class PhysicsThread extends Thread {
 		this.mobileObjects = mobileObjects;
 		this.collidableObjects = collidableObjects;
 		this.listener = listener;
+		this.paused = false;
 	}
 	
 	
@@ -70,19 +84,31 @@ public class PhysicsThread extends Thread {
 	@Override
 	public void run() {
 		// get the System time
-		long lastTime = System.nanoTime();
+		lastTime = System.nanoTime();
 		
 		// simulation loop
 		while (!Thread.interrupted()) {
+			int td;
+			
+			synchronized (this) {
+				if (paused) {
+					try {
+						Thread.sleep(PHYSICS_SIMULATION_PERIOD);
+
+					} catch (InterruptedException e) {
+						// nothing
+					}
+					continue;
+				}
+				// calculate the time difference
+				long now = System.nanoTime();
+				td = (int) (now - lastTime / 1000l);
+				lastTime = now;
+			}
 			
 			// first, simulate the movement equations
 			MobileObject[] mobileObjectsSnapshot = mobileObjects.toArray(new MobileObject[mobileObjects.size()]);
-			for (MobileObject object: mobileObjectsSnapshot) {
-				// calculate the time difference
-				long now = System.nanoTime();
-				int td = (int)(now - lastTime / 1000l);
-				lastTime = now;
-
+			for (MobileObject object : mobileObjectsSnapshot) {
 				updateObjectVelocity(object, td);
 				updateObjectPosition(object, td);
 			}
@@ -90,8 +116,8 @@ public class PhysicsThread extends Thread {
 			// check for collisions
 			@SuppressWarnings("unchecked")
 			CollisionObject[] collidableObjectsSnapshot = collidableObjects.toArray(new CollisionObject[collidableObjects.size()]);
-			for (int i=0; i<collidableObjectsSnapshot.length; i++) {
-				for (int j=i+1; j<collidableObjectsSnapshot.length; j++) {
+			for (int i = 0; i < collidableObjectsSnapshot.length; i++) {
+				for (int j = i + 1; j < collidableObjectsSnapshot.length; j++) {
 					if (collidableObjectsSnapshot[i].collidesWith(collidableObjectsSnapshot[j])) {
 						// throw an event
 						listener.onCollisionDetected(collidableObjectsSnapshot[i], collidableObjectsSnapshot[j]);
@@ -102,10 +128,32 @@ public class PhysicsThread extends Thread {
 			// wait and repeat
 			try {
 				sleep(PHYSICS_SIMULATION_PERIOD, 0);
+				
 			} catch (InterruptedException e) {
-				Log.w(PhysicsThread.class.getSimpleName(), "Physics thread interrupted!");
-				break;
+				// nothing
 			}
+		}
+	}
+	
+	/**
+	 * Pauses the Physics thread and all its processing (for example, when the game is paused).
+	 * 
+	 * <p>Can be resumed with {@link #resumeProcessing}</p>
+	 */
+	public void pauseProcessing() {
+		synchronized (this) {
+			paused = true;
+			pausedTimeElapsed = System.nanoTime() - lastTime;
+		}
+	}
+	
+	/**
+	 * Resumes the Physics processing.
+	 */
+	public void resumeProcessing() {
+		synchronized (this) {
+			paused = false;
+			lastTime = System.nanoTime() - pausedTimeElapsed;
 		}
 	}
 	

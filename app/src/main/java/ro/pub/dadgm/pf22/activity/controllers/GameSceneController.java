@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import ro.pub.dadgm.pf22.activity.Controller;
 import ro.pub.dadgm.pf22.activity.MainActivity;
+import ro.pub.dadgm.pf22.game.Game;
 import ro.pub.dadgm.pf22.game.models.World;
 import ro.pub.dadgm.pf22.render.views.GameScene;
 
@@ -23,11 +24,6 @@ public class GameSceneController implements Controller {
 	 * Reference to the MainMenu view object.
 	 */
 	protected final GameScene view;
-
-	/**
-	 * Stores the game world model.
-	 */
-	protected final World world;
 	
 	/**
 	 * A list of possible actions.
@@ -41,8 +37,6 @@ public class GameSceneController implements Controller {
 	public GameSceneController(MainActivity mainActivity) {
 		this.mainActivity = mainActivity;
 		this.view = new GameScene(this);
-		
-		world = new World();
 		
 		actions = new HashMap<>();
 		
@@ -89,12 +83,12 @@ public class GameSceneController implements Controller {
 	// getters / setters
 	
 	/**
-	 * Returns the world object.
+	 * Returns the Game's model object.
 	 * 
-	 * @return Reference to the World model object.
+	 * @return Reference to the Game model object.
 	 */
-	public World getWorld() {
-		return world;
+	public Game getGame() {
+		return mainActivity.getGame();
 	}
 	
 }

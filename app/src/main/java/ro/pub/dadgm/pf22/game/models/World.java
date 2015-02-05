@@ -1,12 +1,15 @@
 package ro.pub.dadgm.pf22.game.models;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ro.pub.dadgm.pf22.physics.CollisionObject;
 import ro.pub.dadgm.pf22.physics.MobileObject;
+import ro.pub.dadgm.pf22.utils.events.CollectionListener;
 
 /**
  * Defines the game's world model.
@@ -76,21 +79,33 @@ public class World {
 	 */
 	protected final Set<CollisionObject> collidableObjects;
 	
+	// collection listeners
+	
+	/**
+	 * Used to allow listening to the enemy planes collection changes.
+	 */
+	protected final List<CollectionListener<EnemyPlane>> enemyCollectionListeners;
+	
+	/**
+	 * Used to allow listening to the projectiles collection changes.
+	 */
+	protected final List<CollectionListener<Projectile>> projectileCollectionListeners;
+	
 	
 	/**
 	 * Model object constructor.
 	 */
 	public World() {
 		// generate the terrain
-		terrain = new Terrain(WORLD_WIDTH_X, WORLD_WIDTH_Y, WORLD_MAX_HEIGHT - 30.0f);
+		terrain = new Terrain(WORLD_WIDTH_X, WORLD_WIDTH_Y, WORLD_MAX_HEIGHT * 0.75f);
 		
 		player = new PrimaryPlane();
-		// set player's initial position to the center of the world
-		player.position.setCoordinates(WORLD_WIDTH_X / 2, WORLD_WIDTH_Y / 2, 40.0f);
 		
 		// initialize structures
 		enemyPlanes = new IdentityHashMap<>();
 		projectiles = new IdentityHashMap<>();
+		enemyCollectionListeners = new ArrayList<>();
+		projectileCollectionListeners = new ArrayList<>();
 		
 		// the following are synchronized identity sets
 		mobileObjects = Collections.newSetFromMap(
@@ -143,6 +158,28 @@ public class World {
 	}
 	
 	/**
+	 * Adds a new enemy planes collection listener.
+	 * 
+	 * <p>Warning: the listener's events may be called from any of the game's threads (Activity, Physics or AI)!</p>
+	 * 
+	 * @param listener The listener object.
+	 */
+	public void addEnemyCollectionListener(CollectionListener<EnemyPlane> listener) {
+		enemyCollectionListeners.add(listener);
+	}
+	
+	/**
+	 * Adds a new projectile collection listener.
+	 * 
+	 * <p>Warning: the listener's events may be called from any of the game's threads (Activity, Physics or AI)!</p>
+	 * 
+	 * @param listener The listener object.
+	 */
+	public void addProjectileCollectionListener(CollectionListener<Projectile> listener) {
+		projectileCollectionListeners.add(listener);
+	}
+	
+	/**
 	 * Returns the list of enemy planes (an immutable snapshot).
 	 *
 	 * @return An array with all present enemy planes.
@@ -170,6 +207,10 @@ public class World {
 		enemyPlanes.put(plane, plane);
 		collidableObjects.add(plane);
 		mobileObjects.add(plane);
+		
+		for (CollectionListener<EnemyPlane> listener: enemyCollectionListeners) {
+			listener.onObjectAdded(plane);
+		}
 	}
 	
 	/**
@@ -181,6 +222,10 @@ public class World {
 		enemyPlanes.remove(plane);
 		collidableObjects.remove(plane);
 		mobileObjects.remove(plane);
+		
+		for (CollectionListener<EnemyPlane> listener: enemyCollectionListeners) {
+			listener.onObjectRemoved(plane);
+		}
 	}
 	
 	/**
@@ -192,6 +237,10 @@ public class World {
 		projectiles.put(projectile, projectile);
 		collidableObjects.add(projectile);
 		mobileObjects.add(projectile);
+		
+		for (CollectionListener<Projectile> listener: projectileCollectionListeners) {
+			listener.onObjectAdded(projectile);
+		}
 	}
 	
 	/**
@@ -203,6 +252,10 @@ public class World {
 		projectiles.remove(projectile);
 		collidableObjects.remove(projectile);
 		mobileObjects.remove(projectile);
+		
+		for (CollectionListener<Projectile> listener: projectileCollectionListeners) {
+			listener.onObjectAdded(projectile);
+		}
 	}
 	
 }
