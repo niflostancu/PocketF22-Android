@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
+import ro.pub.dadgm.pf22.game.models.PrimaryPlane;
 import ro.pub.dadgm.pf22.game.models.World;
 import ro.pub.dadgm.pf22.render.Camera;
 import ro.pub.dadgm.pf22.render.Scene3D;
@@ -15,6 +16,7 @@ import ro.pub.dadgm.pf22.render.View;
 import ro.pub.dadgm.pf22.render.objects.Object3D;
 import ro.pub.dadgm.pf22.render.objects.ObjectsManager;
 import ro.pub.dadgm.pf22.render.objects.game.FighterJet3D;
+import ro.pub.dadgm.pf22.render.objects.game.Terrain3D;
 import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
@@ -74,7 +76,7 @@ public class GameScene implements View {
 	/**
 	 * The global light's position.
 	 */
-	public static final float[] LIGHT_POSITION = { 1.0f, World.WORLD_MAX_HEIGHT + 10, 2f };
+	public static final float[] LIGHT_POSITION = { World.WORLD_WIDTH_Y / 2, World.WORLD_WIDTH_X / 2, World.WORLD_MAX_HEIGHT * 2 };
 	
 	/**
 	 * The list of HUD shaders to register.
@@ -89,7 +91,8 @@ public class GameScene implements View {
 	 */
 	protected static final Object[][] REGISTER_SHADERS_3D = {
 			{ "s3d_tex_phong", R.raw.s3d_tex_phong_v, R.raw.s3d_tex_phong_f },
-			{ "s3d_simple_ilum", R.raw.s3d_simple_ilum_v, R.raw.s3d_simple_ilum_f }
+			{ "s3d_simple_ilum", R.raw.s3d_simple_ilum_v, R.raw.s3d_simple_ilum_f },
+			{ "s3d_simple_color", R.raw.s3d_simple_color_v, R.raw.s3d_simple_color_f }
 	};
 	
 	/**
@@ -228,13 +231,19 @@ public class GameScene implements View {
 			shaderManagerHUD.registerShader(name, vertexRes, fragmentRes);
 		}
 		
+		World world = controller.getWorld();
+		PrimaryPlane player = world.getPlayer();
+		
 		// initialize the scene objects
-		FighterJet3D testJet = new FighterJet3D(gameScene3D, "fighter", 0);
+		FighterJet3D testJet = new FighterJet3D(gameScene3D, player, "fighter", 0);
 		objects.add(testJet);
+		
+		Terrain3D terrain = new Terrain3D(gameScene3D, world.getTerrain(), "terrain", 0);
+		objects.add(terrain);
 		
 		// initialize the camera
 		cameraAngle[0] = cameraAngle[1] = 0;
-		cameraPosition.setCoordinates(0, 0, 0);
+		cameraPosition = player.getPosition();
 	}
 	
 	@Override
@@ -285,7 +294,7 @@ public class GameScene implements View {
 			
 			// update the 3D camera
 			Matrix.frustumM(camera.getProjectionMatrix(), 0,
-					-ratio, ratio, -1f, 1f, 1f, 50f );
+					-ratio, ratio, -1f, 1f, 2f, 100f );
 			
 			updateCamera();
 		}
@@ -410,7 +419,7 @@ public class GameScene implements View {
 	protected void updateCamera() {
 		// set the camera to a position around the center
 		// TODO: calculate it based on the direction that the plane faces
-		float[] initialPoint = new float[] { 0, 1.0f, -5.0f, 1 };
+		float[] initialPoint = new float[] { 0, -10.0f, 5.0f, 1 };
 		float[] resPoint = new float[4];
 		
 		// rotate the point around the center

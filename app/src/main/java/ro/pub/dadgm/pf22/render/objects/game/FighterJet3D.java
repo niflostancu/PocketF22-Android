@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import ro.pub.dadgm.pf22.activity.MainActivity;
+import ro.pub.dadgm.pf22.game.models.Plane;
+import ro.pub.dadgm.pf22.game.models.PrimaryPlane;
 import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.objects.AbstractObject3D;
 import ro.pub.dadgm.pf22.render.utils.objloader.Material;
@@ -14,12 +16,13 @@ import ro.pub.dadgm.pf22.render.utils.objloader.OBJParser;
 import ro.pub.dadgm.pf22.render.utils.objloader.TDModel;
 import ro.pub.dadgm.pf22.render.utils.objloader.TDModelPart;
 import ro.pub.dadgm.pf22.render.views.GameScene;
+import ro.pub.dadgm.pf22.utils.Point3D;
 
 /**
  * Implements a 3D fighter jet model.
  */
 public class FighterJet3D extends AbstractObject3D {
-
+	
 	/**
 	 * The asset path of the model's resources.
 	 */
@@ -30,16 +33,22 @@ public class FighterJet3D extends AbstractObject3D {
 	 */
 	protected TDModel modelObj;
 	
+	/**
+	 * The plane model object.
+	 */
+	protected Plane plane;
 	
 	/**
 	 * Initializes the fighter jet 3D object.
-	 *
-	 * @param scene The parent scene object.
+	 *  @param scene The parent scene object.
+	 * @param plane The plane's model object.
 	 * @param tag An optional tag.
 	 * @param priority An optional priority.
 	 */
-	public FighterJet3D(Scene3D scene, String tag, int priority) {
+	public FighterJet3D(Scene3D scene, PrimaryPlane plane, String tag, int priority) {
 		super(scene, tag, priority);
+		
+		this.plane = plane;
 		
 		// get shader program
 		shader = scene.getShaderManager().getShader("s3d_tex_phong");
@@ -60,10 +69,12 @@ public class FighterJet3D extends AbstractObject3D {
 	
 	@Override
 	public void draw() {
+		Point3D position = plane.getPosition();
+		
 		Matrix.setIdentityM(modelMatrix, 0);
-		// Matrix.translateM(modelMatrix, 0, 2f, 2f, -3f);
+		Matrix.translateM(modelMatrix, 0, position.getX(), position.getY(), position.getZ());
 		Matrix.scaleM(modelMatrix, 0, 0.3f, 0.3f, 0.3f);
-		Matrix.rotateM(modelMatrix, 0, -90, 1, 0, 0);
+		// Matrix.rotateM(modelMatrix, 0, -90, 1, 0, 0);
 		
 		float[] lightPosition = GameScene.LIGHT_POSITION;
 		float[] normalMatrix = scene.getCamera().computeNormalMatrix(modelMatrix);
