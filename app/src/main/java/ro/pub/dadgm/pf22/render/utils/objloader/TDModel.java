@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ro.pub.dadgm.pf22.render.utils.BufferUtils;
+import ro.pub.dadgm.pf22.render.utils.NormalUtils;
 
 /**
  * Stores an object's mesh.
@@ -65,16 +66,20 @@ public class TDModel {
 		this.vt = vt;
 		this.parts = parts;
 		
-		// compute vertex normals buffer from the parts
+		// compute the normals buffer from the parts
 		float[] vNormals = new float[numVertices() * 3];
 		for (TDModelPart part: parts) {
 			for (int i=0; i<part.vnPointer.length; i++) {
 				short j = part.vnPointer[i];
 				short k = part.faces[i];
-				vNormals[3*k] = vn[3*j];
-				vNormals[3*k+1] = vn[3*j+1];
-				vNormals[3*k+2] = vn[3*j+2];
+				vNormals[3*k] += vn[3*j];
+				vNormals[3*k+1] += vn[3*j+1];
+				vNormals[3*k+2] += vn[3*j+2];
 			}
+		}
+		
+		for (int i=0; i<numVertices(); i++) {
+			NormalUtils.normalize(vNormals, 3*i);
 		}
 		
 		// aggregate the texture coordinates from the parts

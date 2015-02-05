@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
+import ro.pub.dadgm.pf22.game.models.World;
 import ro.pub.dadgm.pf22.render.Camera;
 import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.ShaderManager;
@@ -26,6 +27,7 @@ import ro.pub.dadgm.pf22.utils.Point3D;
  * <p>The world space is given by the Game model instance.</p>
  */
 public class GameScene implements View {
+	
 	
 	/**
 	 * Implements the Scene3D interface and offers services to the game scene's 3D objects.
@@ -66,6 +68,13 @@ public class GameScene implements View {
 			return GameScene.this.drawText;
 		}
 	}
+	
+	// several constants
+
+	/**
+	 * The global light's position.
+	 */
+	public static final float[] LIGHT_POSITION = { 1.0f, World.WORLD_MAX_HEIGHT + 10, 2f };
 	
 	/**
 	 * The list of HUD shaders to register.

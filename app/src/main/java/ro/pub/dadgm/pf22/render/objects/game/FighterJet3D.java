@@ -13,6 +13,7 @@ import ro.pub.dadgm.pf22.render.utils.objloader.Material;
 import ro.pub.dadgm.pf22.render.utils.objloader.OBJParser;
 import ro.pub.dadgm.pf22.render.utils.objloader.TDModel;
 import ro.pub.dadgm.pf22.render.utils.objloader.TDModelPart;
+import ro.pub.dadgm.pf22.render.views.GameScene;
 
 /**
  * Implements a 3D fighter jet model.
@@ -64,7 +65,7 @@ public class FighterJet3D extends AbstractObject3D {
 		Matrix.scaleM(modelMatrix, 0, 0.3f, 0.3f, 0.3f);
 		Matrix.rotateM(modelMatrix, 0, -90, 1, 0, 0);
 		
-		float[] lightPosition = new float[] { 1.0f, 20f, 2f };
+		float[] lightPosition = GameScene.LIGHT_POSITION;
 		float[] normalMatrix = scene.getCamera().computeNormalMatrix(modelMatrix);
 		
 		shader.use();
