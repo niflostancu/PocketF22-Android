@@ -5,6 +5,8 @@ package ro.pub.dadgm.pf22.utils;
  * 
  * <p>The class is mutable (for performance reasons).</p>
  * 
+ * <p>All instance methods are synchronized (they guarantee consistent access from multiple threads).</p>
+ * 
  * <p>Has {@link Object#equals} and {@link Object#hashCode} overrides.</p>
  */
 public class Point3D {
@@ -27,6 +29,7 @@ public class Point3D {
 	 * @param y The Y coordinate.
 	 * @param z The Z coordinate.
 	 */
+	@SuppressWarnings("unused")
 	public Point3D(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
@@ -39,7 +42,7 @@ public class Point3D {
 	 * 
 	 * @return X
 	 */
-	public float getX() {
+	public synchronized float getX() {
 		return x;
 	}
 	
@@ -49,7 +52,7 @@ public class Point3D {
 	 * @param x The new X value.
 	 */
 	@SuppressWarnings("unused")
-	public void setX(float x) {
+	public synchronized void setX(float x) {
 		this.x = x;
 	}
 	
@@ -58,7 +61,7 @@ public class Point3D {
 	 *
 	 * @return Y
 	 */
-	public float getY() {
+	public synchronized float getY() {
 		return y;
 	}
 	
@@ -68,7 +71,7 @@ public class Point3D {
 	 * @param y The new Y value.
 	 */
 	@SuppressWarnings("unused")
-	public void setY(float y) {
+	public synchronized void setY(float y) {
 		this.y = y;
 	}
 	
@@ -77,7 +80,7 @@ public class Point3D {
 	 *
 	 * @return Z
 	 */
-	public float getZ() {
+	public synchronized float getZ() {
 		return z;
 	}
 	
@@ -87,7 +90,7 @@ public class Point3D {
 	 * @param z The new Z value.
 	 */
 	@SuppressWarnings("unused")
-	public void setZ(float z) {
+	public synchronized void setZ(float z) {
 		this.z = z;
 	}
 	
@@ -99,10 +102,10 @@ public class Point3D {
 	 * @param y The Y coordinate.
 	 * @param z The Z coordinate.
 	 */
-	public void setCoordinates(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	public synchronized void setCoordinates(float x, float y, float z) {
+		setX(x);
+		setY(y);
+		setZ(z);
 	}
 	
 	/**
@@ -111,30 +114,30 @@ public class Point3D {
 	 * @return A float[] array with the point's coordinates.
 	 */
 	@SuppressWarnings("unused")
-	public float[] toArray() {
-		return new float[] { x, y, z };
+	public synchronized float[] toArray() {
+		return new float[] { getX(), getY(), getZ() };
 	}
 	
 	
 	@Override
-	public boolean equals(Object obj) {
+	public synchronized boolean equals(Object obj) {
 		if (obj == null) return false;
 		
 		if (!(obj instanceof Point3D))
 			return false;
 		
 		Point3D p2 = (Point3D) obj;
-		return (x == p2.x) && (y == p2.y) && (z == p2.z);
+		return (getX() == p2.getX()) && (getY() == p2.getY()) && (getZ() == p2.getZ());
 	}
 	
 	@Override
-	public int hashCode() {
+	public synchronized int hashCode() {
 		final float p = 853; // some prime number
-		return Math.round(p*p*x + p*y + z);
+		return Math.round(p*p*getX() + p*getY() + getZ());
 	}
 	
 	@Override
-	public String toString() {
-		return "(" + x + ", " + y + ", " + z + ")";
+	public synchronized String toString() {
+		return "(" + getX() + ", " + getY() + ", " + getZ() + ")";
 	}
 }

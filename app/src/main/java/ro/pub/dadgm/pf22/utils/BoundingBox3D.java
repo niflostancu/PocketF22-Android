@@ -14,7 +14,7 @@ public class BoundingBox3D {
 	
 	
 	public void intersects(BoundingBox3D box2) {
-		
+		// TODO implement this
 	}
 	
 }
