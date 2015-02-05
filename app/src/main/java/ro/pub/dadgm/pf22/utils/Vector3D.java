@@ -146,6 +146,8 @@ public class Vector3D implements Serializable {
 
 	/**
 	 * Adds another vector to the current instance.
+	 * 
+	 * @param vec2 The vector to add.
 	 */
 	@SuppressWarnings("unused")
 	public synchronized void add(Vector3D vec2) {
@@ -156,12 +158,26 @@ public class Vector3D implements Serializable {
 	
 	/**
 	 * Subtracts another vector from the current instance.
+	 * 
+	 * @param vec2 The vector to subtract.
 	 */
 	@SuppressWarnings("unused")
 	public synchronized void subtract(Vector3D vec2) {
 		setX(getX() - vec2.getX());
 		setY(getY() - vec2.getY());
 		setZ(getZ() - vec2.getZ());
+	}
+	
+	/**
+	 * Multiplies (scales) the vector with the specified scalar value.
+	 * 
+	 * @param value The scalar to multiply with.
+	 */
+	@SuppressWarnings("unused")
+	public synchronized void multiply(float value) {
+		setX(getX() * value);
+		setY(getY() * value);
+		setZ(getZ() * value);
 	}
 	
 	/**

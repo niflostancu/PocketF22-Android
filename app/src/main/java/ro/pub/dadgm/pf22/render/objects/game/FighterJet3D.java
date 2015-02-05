@@ -71,16 +71,13 @@ public class FighterJet3D extends AbstractObject3D {
 	public void draw() {
 		float[] position = plane.getPosition().toArray();
 		
-		Vector3D direction = new Vector3D(plane.getVelocity());
-		direction.normalize();
-		// get the angle between the OX axis and the plane's direction
-		float angle = (float)(Math.acos(direction.dotProduct(new Vector3D(1, 0, 0))) / (2*Math.PI) * 360);
-		
 		Matrix.setIdentityM(modelMatrix, 0);
 		Matrix.translateM(modelMatrix, 0, position[0], position[1], position[2]);
 		Matrix.scaleM(modelMatrix, 0, 1/19f, 1/19f, 1/19f);
+		Matrix.rotateM(modelMatrix, 0, plane.getPitch(), 1, 0, 0);
+		Matrix.rotateM(modelMatrix, 0, plane.getYaw(), 0, 0, 1);
+		Matrix.rotateM(modelMatrix, 0, plane.getRoll(), 1, 0, 0);
 		Matrix.rotateM(modelMatrix, 0, -90, 0, 0, 1);
-		Matrix.rotateM(modelMatrix, 0, angle, 0, 0, 1);
 		
 		float[] lightPosition = GameScene.LIGHT_POSITION;
 		float[] normalMatrix = scene.getCamera().computeNormalMatrix(modelMatrix);

@@ -165,16 +165,16 @@ public class GameScene implements View {
 	 * Stores the current camera angle.
 	 */
 	protected float[] cameraAngle = new float[2];
-
-	/**
-	 * Stores camera's center position (player's fighter jet).
-	 */
-	protected Point3D cameraPosition = new Point3D();
 	
 	/**
 	 * The initial coordinates on touch down.
 	 */
 	protected float[] initialTouchPoint = new float[2];
+	
+	/**
+	 * Player's model object.
+	 */
+	protected PrimaryPlane player;
 	
 	
 	/**
@@ -235,7 +235,7 @@ public class GameScene implements View {
 		
 		Game game = controller.getGame();
 		World world = game.getWorld();
-		PrimaryPlane player = world.getPlayer();
+		player = world.getPlayer();
 		
 		// initialize the scene objects
 		FighterJet3D testJet = new FighterJet3D(gameScene3D, player, "fighter", 0);
@@ -246,7 +246,6 @@ public class GameScene implements View {
 		
 		// initialize the camera
 		cameraAngle[0] = cameraAngle[1] = 0;
-		cameraPosition = player.getPosition();
 	}
 	
 	@Override
@@ -300,7 +299,7 @@ public class GameScene implements View {
 			// update the 3D camera
 			//Matrix.frustumM(camera.getProjectionMatrix(), 0,
 			//		-ratio, ratio, -1f, 1f, 2f, 100f );
-			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 1f, 150f);
+			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 1f, 300f);
 			
 			updateCamera();
 		}
@@ -423,22 +422,26 @@ public class GameScene implements View {
 	 * <p>Must be executed from the OpenGL thread!</p>
 	 */
 	protected void updateCamera() {
-		// set the camera to a position around the center
-		// TODO: calculate it based on the direction that the plane faces
-		float[] initialPoint = new float[] { -2.0f, 0.0f, 1.0f, 1 };
+		float[] position = player.getPosition().toArray();
+		
+		// compute camera's facing direction
+		float[] initialPoint = new float[] { -2, 0, 1, 1 };
 		float[] resPoint = new float[4];
 		
-		// rotate the point around the center
+		// set the camera to a position around the player's plane
 		float[] matr = new float[16];
 		Matrix.setIdentityM(matr, 0);
-		Matrix.translateM(matr, 0, cameraPosition.getX(), cameraPosition.getY(), cameraPosition.getZ());
+		Matrix.translateM(matr, 0, position[0], position[1], position[2]);
+		
 		Matrix.rotateM(matr, 0, cameraAngle[0], 0, 0, 1);
+		Matrix.rotateM(matr, 0, player.getYaw(), 0, 0, 1);
 		Matrix.rotateM(matr, 0, cameraAngle[1], 0, 1, 0);
+		
 		Matrix.multiplyMV(resPoint, 0, matr, 0, initialPoint, 0);
 		
 		Matrix.setLookAtM(camera.getViewMatrix(), 0, 
-				resPoint[0], resPoint[1], resPoint[2],  
-				cameraPosition.getX(), cameraPosition.getY(), cameraPosition.getZ() + 0.5f, 
+				resPoint[0], resPoint[1], resPoint[2],
+				position[0], position[1], position[2] + 0.5f, 
 				0f, 0.0f, 1.0f );
 		
 		shaderManager3D.notifyCameraChanged(camera);
