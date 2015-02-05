@@ -46,5 +46,5 @@ void main()
 			alpha = texColor4.a;
 	}
 	
-	gl_FragColor = vec4(u_ambientColor + lambertian * u_diffuseColor * texColor + specular * u_specularColor, alpha);
+	gl_FragColor = vec4(u_ambientColor * texColor + lambertian * u_diffuseColor * texColor + specular * u_specularColor, alpha);
 }

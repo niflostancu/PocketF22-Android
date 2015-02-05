@@ -49,7 +49,9 @@ public class Terrain extends BaseModel implements CollisionObject {
 	protected int[] dimensions;
 	
 	/**
-	 * The maximum height to generate.
+	 * The maximum generated height.
+	 * 
+	 * <p>Should be updated after the generation to the maximum height of a generated point.</p>
 	 */
 	protected float maxHeight;
 	
@@ -140,7 +142,7 @@ public class Terrain extends BaseModel implements CollisionObject {
 				float tval = (1 - yfrac) * ( (1 - xfrac)*s00 + xfrac*s01) +
 						yfrac * ( (1 - xfrac)*s10 + xfrac*s11);
 				
-				heightMap[i][j] = tval * maxHeight;
+				heightMap[i][j] = tval * this.maxHeight;
 				
 				min = Math.min(heightMap[i][j], min);
 			}
@@ -157,6 +159,15 @@ public class Terrain extends BaseModel implements CollisionObject {
 		// apply a Gaussian Blur on the heightmap to smoothen it
 		float[][] kernel = makeGaussianKernel(11, 30);
 		heightMap = convolutionFilter(heightMap, kernel, 1, 0, maxHeight);
+		
+		// calculate the maximum generated height
+		maxHeight = 0;
+		for (int i=0; i<dimensions[0]; i++) {
+			for (int j = 0; j < dimensions[1]; j++) {
+				if (maxHeight < heightMap[i][j])
+					maxHeight = heightMap[i][j];
+			}
+		}
 	}
 
 	/**
@@ -417,7 +428,7 @@ public class Terrain extends BaseModel implements CollisionObject {
 			}
 		}
 	}
-
+	
 	/**
 	 * Rolls a 2-sided dice (boolean :D ) with the specified chance.
 	 * 
@@ -483,6 +494,7 @@ public class Terrain extends BaseModel implements CollisionObject {
 	public synchronized float getMaxHeight() {
 		return maxHeight;
 	}
+	
 	
 	@Override
 	public boolean collidesWith(CollisionObject obj) {

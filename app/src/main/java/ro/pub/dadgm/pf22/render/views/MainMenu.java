@@ -114,7 +114,7 @@ public class MainMenu implements View, Scene3D {
 		// clean up structures first
 		ShaderLoader.clear();
 		TextureLoader.clear();
-		objects.clear();
+		objects = new ObjectsManager<>();
 		shaderManager.clear();
 		drawText.destroy();
 		

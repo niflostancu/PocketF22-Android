@@ -211,7 +211,8 @@ public class GameScene implements View {
 		// clean up structures first
 		ShaderLoader.clear();
 		TextureLoader.clear();
-		objects.clear();
+		objects = new ObjectsManager<>();
+		hudObjects = new ObjectsManager<>();
 		shaderManager3D.clear();
 		shaderManagerHUD.clear();
 		drawText.destroy();
@@ -271,6 +272,8 @@ public class GameScene implements View {
 	public void draw() {
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 		
+		updateCamera();
+		
 		// draw the objects
 		objects.drawAll();
 		hudObjects.drawAll();
@@ -295,8 +298,9 @@ public class GameScene implements View {
 			shaderManagerHUD.notifyCameraChanged(hudCamera);
 			
 			// update the 3D camera
-			Matrix.frustumM(camera.getProjectionMatrix(), 0,
-					-ratio, ratio, -1f, 1f, 2f, 100f );
+			//Matrix.frustumM(camera.getProjectionMatrix(), 0,
+			//		-ratio, ratio, -1f, 1f, 2f, 100f );
+			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 1f, 150f);
 			
 			updateCamera();
 		}
@@ -421,21 +425,21 @@ public class GameScene implements View {
 	protected void updateCamera() {
 		// set the camera to a position around the center
 		// TODO: calculate it based on the direction that the plane faces
-		float[] initialPoint = new float[] { 0, -10.0f, 5.0f, 1 };
+		float[] initialPoint = new float[] { -2.0f, 0.0f, 1.0f, 1 };
 		float[] resPoint = new float[4];
 		
 		// rotate the point around the center
 		float[] matr = new float[16];
 		Matrix.setIdentityM(matr, 0);
 		Matrix.translateM(matr, 0, cameraPosition.getX(), cameraPosition.getY(), cameraPosition.getZ());
-		Matrix.rotateM(matr, 0, cameraAngle[0], 0, 1, 0);
-		Matrix.rotateM(matr, 0, cameraAngle[1], 1, 0, 0);
+		Matrix.rotateM(matr, 0, cameraAngle[0], 0, 0, 1);
+		Matrix.rotateM(matr, 0, cameraAngle[1], 0, 1, 0);
 		Matrix.multiplyMV(resPoint, 0, matr, 0, initialPoint, 0);
 		
 		Matrix.setLookAtM(camera.getViewMatrix(), 0, 
 				resPoint[0], resPoint[1], resPoint[2],  
-				cameraPosition.getX(), cameraPosition.getY(), cameraPosition.getZ(), 
-				0f, 1.0f, 0.0f );
+				cameraPosition.getX(), cameraPosition.getY(), cameraPosition.getZ() + 0.5f, 
+				0f, 0.0f, 1.0f );
 		
 		shaderManager3D.notifyCameraChanged(camera);
 	}

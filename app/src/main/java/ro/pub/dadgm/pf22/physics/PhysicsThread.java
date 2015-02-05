@@ -102,7 +102,7 @@ public class PhysicsThread extends Thread {
 				}
 				// calculate the time difference
 				long now = System.nanoTime();
-				td = (int) (now - lastTime / 1000l);
+				td = (int) ((now - lastTime) / 1000000l);
 				lastTime = now;
 			}
 			
@@ -167,7 +167,7 @@ public class PhysicsThread extends Thread {
 		Vector3D position = new Vector3D(object.getPosition());
 		Vector3D velocity = object.getVelocity();
 		
-		float step = 1000.0f / td;
+		float step = td / 1000.f;
 		float dx = velocity.getX()*step;
 		float dy = velocity.getY()*step;
 		float dz = velocity.getZ()*step;
@@ -191,7 +191,7 @@ public class PhysicsThread extends Thread {
 	protected void updateObjectVelocity(MobileObject object, int td) {
 		// get a snapshot of the object's velocity
 		float[] velocity = object.getVelocity().toArray();
-		float step = 1000.0f / td;
+		float step = td / 1000.f;
 		
 		// get the forces acting on the object
 		Force[] forces = object.getForces();
