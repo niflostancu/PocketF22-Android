@@ -17,15 +17,17 @@ public class World {
 	// several constants
 	
 	/**
-	 * World's horizontal space (X and Y). 
+	 * World's horizontal space (X and Y).
+	 * 
+	 * <p>Warning: their product must be smaller than the maximum value of a unsigned short (65536)!</p>
 	 */
-	public static int WORLD_WIDTH_X = 1000;
-	public static int WORLD_WIDTH_Y = 1000;
+	public static int WORLD_WIDTH_X = 250;
+	public static int WORLD_WIDTH_Y = 250;
 	
 	/**
 	 * Maximum world's height.
 	 */
-	public static float WORLD_MAX_HEIGHT = 130.0f;
+	public static float WORLD_MAX_HEIGHT = 80.0f;
 	
 	
 	// world components
@@ -61,6 +63,10 @@ public class World {
 	public World() {
 		// generate the terrain
 		terrain = new Terrain(WORLD_WIDTH_X, WORLD_WIDTH_Y, WORLD_MAX_HEIGHT - 30.0f);
+		
+		player = new PrimaryPlane();
+		// set player's initial position to the center of the world
+		player.position.setCoordinates(WORLD_WIDTH_X / 2, WORLD_WIDTH_Y / 2, 40.0f);
 		
 		// initialize structures
 		enemyPlanes = new IdentityHashMap<>();
