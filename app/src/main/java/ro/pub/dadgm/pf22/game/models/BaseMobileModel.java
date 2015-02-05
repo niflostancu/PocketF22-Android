@@ -1,8 +1,5 @@
 package ro.pub.dadgm.pf22.game.models;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import ro.pub.dadgm.pf22.physics.CollisionObject;
 import ro.pub.dadgm.pf22.physics.Force;
 import ro.pub.dadgm.pf22.physics.MobileObject;
@@ -12,9 +9,10 @@ import ro.pub.dadgm.pf22.utils.Vector3D;
 /**
  * The common model class for mobile objects.
  * 
- * <p>Usable with the physics engine to automatically update the position / speed of the object.</p>
+ * <p>Usable with the physics engine to automatically update the position / speed of the object and 
+ * check for collision detection.</p>
  */
-public abstract class BaseMobileModel extends BaseModel implements MobileObject {
+public abstract class BaseMobileModel extends BaseModel implements MobileObject, CollisionObject {
 	
 	/**
 	 * The position of the object.
@@ -44,8 +42,8 @@ public abstract class BaseMobileModel extends BaseModel implements MobileObject 
 	 * @return Empty collection.
 	 */
 	@Override
-	public Collection<Force> getForces() {
-		return new ArrayList<>();
+	public Force[] getForces() {
+		return new Force[0];
 	}
 	
 	@Override

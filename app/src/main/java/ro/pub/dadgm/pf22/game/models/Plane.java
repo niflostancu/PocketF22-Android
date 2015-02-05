@@ -1,5 +1,7 @@
 package ro.pub.dadgm.pf22.game.models;
 
+import ro.pub.dadgm.pf22.physics.CollisionObject;
+
 /**
  * The base model class for the fighter planes (both player and AI).
  * 
@@ -13,6 +15,21 @@ public class Plane extends BaseMobileModel {
 	 * Plane's default health.
 	 */
 	public final float PLANE_HEALTH = 100;
+	
+	/**
+	 * Plane's length (from back to front).
+	 */
+	public final float PLANE_LENGTH = 19 / 19.0f; // model's length: 19
+	
+	/**
+	 * Plane's side width (from wing to wing).
+	 */
+	public final float PLANE_WIDTH = 13 / 19.0f; // model's width: 13
+	
+	/**
+	 * Plane's height.
+	 */
+	public final float PLANE_HEIGHT = 4 / 19.0f; // model's height: 4
 	
 	
 	// beside position and velocity, a plane has several other attributes.
@@ -74,5 +91,12 @@ public class Plane extends BaseMobileModel {
 	public synchronized float getPitch() {
 		return pitch;
 	}
-
+	
+	
+	@Override
+	public boolean collidesWith(CollisionObject obj) {
+		// TODO implement this
+		return false;
+	}
+	
 }

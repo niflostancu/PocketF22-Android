@@ -1,6 +1,12 @@
 package ro.pub.dadgm.pf22.game.models;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import ro.pub.dadgm.pf22.physics.CollisionObject;
+import ro.pub.dadgm.pf22.physics.MobileObject;
 
 /**
  * Defines the game's world model.
@@ -47,14 +53,28 @@ public class World {
 	 * 
 	 * <p>Uses a map for quick retrieval and deletion of objects, since the list is slightly dynamic.</p>
 	 */
-	protected IdentityHashMap<EnemyPlane, EnemyPlane> enemyPlanes;
+	protected final IdentityHashMap<EnemyPlane, EnemyPlane> enemyPlanes;
 	
 	/**
 	 * The list of currently present projectiles.
 	 * 
 	 * <p>Uses a map for quick retrieval and deletion of objects, since the list is very dynamic.</p>
 	 */
-	protected IdentityHashMap<Projectile, Projectile> projectiles;
+	protected final IdentityHashMap<Projectile, Projectile> projectiles;
+	
+	/**
+	 * Maintains the set of mobile objects. Used by the Physics engine.
+	 * 
+	 * <p>Needs to be concurrent.</p>
+	 */
+	protected final Set<MobileObject> mobileObjects;
+	
+	/**
+	 * Maintains the set of collidable objects. Used by the Physics engine.
+	 * 
+	 * <p>Needs to be concurrent.</p>
+	 */
+	protected final Set<CollisionObject> collidableObjects;
 	
 	
 	/**
@@ -71,6 +91,12 @@ public class World {
 		// initialize structures
 		enemyPlanes = new IdentityHashMap<>();
 		projectiles = new IdentityHashMap<>();
+		
+		// the following are synchronized identity sets
+		mobileObjects = Collections.newSetFromMap(
+				new ConcurrentHashMap<MobileObject, Boolean>());
+		collidableObjects = Collections.newSetFromMap(
+				new ConcurrentHashMap<CollisionObject, Boolean>());
 	}
 	
 	
@@ -90,6 +116,30 @@ public class World {
 	 */
 	public synchronized PrimaryPlane getPlayer() {
 		return player;
+	}
+	
+	/**
+	 * Returns the dynamic set of mobile objects.
+	 * 
+	 * <p>The set can be accessed from any thread (it has concurrent access). 
+	 * It is readonly, though (but its contents can change over time!).</p>
+	 * 
+	 * @return The concurrent mobile objects set.
+	 */
+	public Set<MobileObject> getMobileObjects() {
+		return Collections.unmodifiableSet(mobileObjects);
+	}
+	
+	/**
+	 * Returns the dynamic set of collidable objects.
+	 *
+	 * <p>The set can be accessed from any thread (it has concurrent access). 
+	 * It is readonly, though (but its contents can change over time!).</p>
+	 *
+	 * @return The concurrent collidable objects set.
+	 */
+	public Set<CollisionObject> getCollidableObjects() {
+		return Collections.unmodifiableSet(collidableObjects);
 	}
 	
 	/**
@@ -118,6 +168,8 @@ public class World {
 	 */
 	public synchronized void addPlane(EnemyPlane plane) {
 		enemyPlanes.put(plane, plane);
+		collidableObjects.add(plane);
+		mobileObjects.add(plane);
 	}
 	
 	/**
@@ -127,6 +179,8 @@ public class World {
 	 */
 	public synchronized void removePlane(EnemyPlane plane) {
 		enemyPlanes.remove(plane);
+		collidableObjects.remove(plane);
+		mobileObjects.remove(plane);
 	}
 	
 	/**
@@ -136,6 +190,8 @@ public class World {
 	 */
 	public synchronized void addProjectile(Projectile projectile) {
 		projectiles.put(projectile, projectile);
+		collidableObjects.add(projectile);
+		mobileObjects.add(projectile);
 	}
 	
 	/**
@@ -145,6 +201,8 @@ public class World {
 	 */
 	public synchronized void removeProjectile(Projectile projectile) {
 		projectiles.remove(projectile);
+		collidableObjects.remove(projectile);
+		mobileObjects.remove(projectile);
 	}
 	
 }

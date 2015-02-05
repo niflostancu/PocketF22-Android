@@ -2,12 +2,14 @@ package ro.pub.dadgm.pf22.game.models;
 
 import java.util.Stack;
 
+import ro.pub.dadgm.pf22.physics.CollisionObject;
+
 /**
  * The model class for terrains.
  * 
  * <p>A terrain is a height map of large dimensions.</p>
  */
-public class Terrain extends BaseMobileModel {
+public class Terrain extends BaseModel implements CollisionObject {
 	
 	// generation constants
 	
@@ -471,6 +473,13 @@ public class Terrain extends BaseMobileModel {
 	@SuppressWarnings("unused")
 	public synchronized int[] getTypeCount() {
 		return typeCount;
+	}
+	
+	
+	@Override
+	public boolean collidesWith(CollisionObject obj) {
+		// TODO implement this
+		return false;
 	}
 	
 }

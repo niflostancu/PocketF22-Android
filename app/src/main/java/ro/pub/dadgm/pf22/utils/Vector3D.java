@@ -48,6 +48,17 @@ public class Vector3D {
 	}
 	
 	/**
+	 * Convertor constructor (from a Point3D instance).
+	 *
+	 * @param obj The object to copy.
+	 */
+	@SuppressWarnings("unused")
+	public Vector3D(Point3D obj) {
+		float[] values = obj.toArray(); // the toArray operation is atomic
+		this.setValues(values[0], values[1], values[2]);
+	}
+	
+	/**
 	 * Getter for the X value.
 	 * 
 	 * @return X

@@ -1,12 +1,12 @@
 package ro.pub.dadgm.pf22.physics;
 
-import java.util.Collection;
-
 import ro.pub.dadgm.pf22.utils.Point3D;
 import ro.pub.dadgm.pf22.utils.Vector3D;
 
 /**
  * The interface that all mobile objects that need to have their physics simulated must implement.
+ * 
+ * <p>Care should be taken when implementing these methods: they will be called from the PhysicsThread!</p>
  */
 public interface MobileObject {
 	
@@ -24,15 +24,15 @@ public interface MobileObject {
 	 * 
 	 * <p>It is also used for modifying the object's velocity.</p>
 	 * 
-	 * @return
+	 * @return The object's velocity.
 	 */
 	public Vector3D getVelocity();
 	
 	/**
 	 * Returns the list of forces that currently act on the object.
 	 * 
-	 * @return A collection of forces.
+	 * @return The forces that act on the object.
 	 */
-	public Collection<Force> getForces();
+	public Force[] getForces();
 	
 }
