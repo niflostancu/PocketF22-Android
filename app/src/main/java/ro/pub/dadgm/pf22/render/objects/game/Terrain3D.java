@@ -34,39 +34,39 @@ public class Terrain3D extends AbstractObject3D {
 		/**
 		 * The type identifier of the parcel (index of {@link Terrain#TERRAIN_TYPES}).
 		 */
-		byte type;
+		protected byte type;
 		
 		// work arrays
 		
 		/**
 		 * Stores the texture coordinates.
 		 */
-		float[] textureCoords;
+		protected float[] textureCoords;
 		
 		/**
 		 * The list of triangles (vertex indices).
 		 */
-		ArrayList<Integer> triangles;
+		protected ArrayList<Integer> triangles;
 		
 		/**
 		 * Stores the triangle indices count (aka the size of the index buffer).
 		 */
-		int indexCount;
+		protected int indexCount;
 		
 		/**
 		 * Texture coordinates buffer (for all vertices).
 		 */
-		FloatBuffer textureCoordsBuf;
+		protected int vbo;
 		
 		/**
 		 * Parcel's triangles.
 		 */
-		ShortBuffer vertexIndicesBuf;
+		protected int ibo;
 		
 		/**
 		 * Stores the loaded texture resource for the parcel.
 		 */
-		int texture;
+		protected int texture;
 		
 		/**
 		 * Initializes a new parcel.
@@ -110,15 +110,35 @@ public class Terrain3D extends AbstractObject3D {
 		 * Loads the buffers/textures and cleans up the temporary data used.
 		 */
 		public void load() {
-			textureCoordsBuf = BufferUtils.asBuffer(textureCoords);
+			FloatBuffer textureCoordsBuf = BufferUtils.asBuffer(textureCoords);
 			textureCoords = null;
+			// allocate a VBO
+			int[] allocatedVBO = { 0 };
+			GLES20.glGenBuffers(1, allocatedVBO, 0);
+			if (allocatedVBO[0] <= 0)
+				throw new RuntimeException("Unable to allocate VBO!");
+			this.vbo = allocatedVBO[0];
+			GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, allocatedVBO[0]);
+			GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, textureCoordsBuf.capacity() * 4,
+					textureCoordsBuf, GLES20.GL_STATIC_DRAW);
+			GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 			
-			vertexIndicesBuf = BufferUtils.allocateShortBuffer(triangles.size());
+			ShortBuffer vertexIndicesBuf = BufferUtils.allocateShortBuffer(triangles.size());
 			for (Integer v: triangles)
 				vertexIndicesBuf.put((short)((int)v));
 			vertexIndicesBuf.position(0);
 			indexCount = triangles.size();
 			triangles = null;
+			// allocate an IBO
+			int[] allocatedIBO = { 0 };
+			GLES20.glGenBuffers(1, allocatedIBO, 0);
+			if (allocatedIBO[0] <= 0)
+				throw new RuntimeException("Unable to allocate IBO!");
+			ibo = allocatedIBO[0];
+			GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, allocatedIBO[0]);
+			GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, vertexIndicesBuf.capacity() * 2,
+					vertexIndicesBuf, GLES20.GL_STATIC_DRAW);
+			GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
 			
 			Object[] terrainInfo = Terrain.TERRAIN_TYPES[type];
 			String textureFile = (String)terrainInfo[1];
@@ -147,9 +167,9 @@ public class Terrain3D extends AbstractObject3D {
 	protected int vertexCount;
 	
 	/**
-	 * Computes normals buffer.
+	 * The VBO that stores the vertex data.
 	 */
-	protected FloatBuffer normalsBuf;
+	protected int vbo;
 	
 	/**
 	 * The different parcels that make up the terrain.
@@ -189,18 +209,16 @@ public class Terrain3D extends AbstractObject3D {
 		
 		vertexCount = (dims[0] * dims[1]);
 		
-		// allocate the working buffers
-		float[] vertexArr = new float[vertexCount * 3];
-		float[] normalsArr = new float[vertexCount * 3];
-		
+		// compute vertex and normals data
+		float[] vertexNormals = new float[vertexCount * 8];
 		for (int i=0; i<dims[0]; i++) {
 			for (int j=0; j<dims[1]; j++) {
 				int v = (i * dims[1] + j); // the current vertex
 				
 				// fill in the vertex array
-				vertexArr[3*v] = i; // x
-				vertexArr[3*v+1] = j; // y
-				vertexArr[3*v+2] = heightMap[i][j]; // z
+				vertexNormals[8*v] = i; // x
+				vertexNormals[8*v+1] = j; // y
+				vertexNormals[8*v+2] = heightMap[i][j]; // z
 				
 				// compute the triangles
 				byte t = typeMap[i][j];
@@ -242,15 +260,15 @@ public class Terrain3D extends AbstractObject3D {
 					v3 = v; // current vertex is the third in the quad
 					v4 = ((i-1)*dims[1] + j);
 					// The 3-1-2 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexArr, 3*v3, vertexArr, 3*v1, vertexArr, 3*v2);
-					normalsArr[3*v] += tmp[0];
-					normalsArr[3*v+1] += tmp[1];
-					normalsArr[3*v+2] += tmp[2];
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v3+4, vertexNormals, 8*v1+4, vertexNormals, 8*v2+4);
+					vertexNormals[8*v+4] += tmp[0];
+					vertexNormals[8*v+5] += tmp[1];
+					vertexNormals[8*v+6] += tmp[2];
 					// The 3-4-1 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexArr, 3*v3, vertexArr, 3*v4, vertexArr, 3*v1);
-					normalsArr[3*v] += tmp[0];
-					normalsArr[3*v+1] += tmp[1];
-					normalsArr[3*v+2] += tmp[2];
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 3*v3+4, vertexNormals, 3*v4+4, vertexNormals, 8*v1+4);
+					vertexNormals[8*v+4] += tmp[0];
+					vertexNormals[8*v+5] += tmp[1];
+					vertexNormals[8*v+6] += tmp[2];
 				}
 				
 				if (i > 0 && j < (dims[1]-1)) { // upper-right quad
@@ -259,10 +277,10 @@ public class Terrain3D extends AbstractObject3D {
 					v3 = ((i)*dims[1] + j+1);
 					// v4 = 0; // not important
 					// The 2-3-1 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexArr, 3*v2, vertexArr, 3*v3, vertexArr, 3*v1);
-					normalsArr[3*v] += tmp[0];
-					normalsArr[3*v+1] += tmp[1];
-					normalsArr[3*v+2] += tmp[2];
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 3*v2+4, vertexNormals, 3*v3+4, vertexNormals, 3*v1+4);
+					vertexNormals[8*v+4] += tmp[0];
+					vertexNormals[8*v+5] += tmp[1];
+					vertexNormals[8*v+6] += tmp[2];
 				}
 				
 				if (i < (dims[0]-1) && j > 0) { // lower-left quad
@@ -271,10 +289,10 @@ public class Terrain3D extends AbstractObject3D {
 					v3 = ((i+1)*dims[1] + j);
 					v4 = v; // current vertex is the last in the quad
 					// The 4-1-3 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexArr, 3*v4, vertexArr, 3*v1, vertexArr, 3*v3);
-					normalsArr[3*v] += tmp[0];
-					normalsArr[3*v+1] += tmp[1];
-					normalsArr[3*v+2] += tmp[2];
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v4+4, vertexNormals, 8*v1+4, vertexNormals, 8*v3+4);
+					vertexNormals[8*v+4] += tmp[0];
+					vertexNormals[8*v+5] += tmp[1];
+					vertexNormals[8*v+6] += tmp[2];
 				}
 				
 				if (i < (dims[0]-1) && j < (dims[1]-1)) { // upper-right quad
@@ -283,21 +301,34 @@ public class Terrain3D extends AbstractObject3D {
 					v3 = ((i+1)*dims[1] + j+1);
 					v4 = ((i)*dims[1] + j+1);
 					// The 1-2-3 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexArr, 3*v1, vertexArr, 3*v2, vertexArr, 3*v3);
-					normalsArr[3*v] += tmp[0];
-					normalsArr[3*v+1] += tmp[1];
-					normalsArr[3*v+2] += tmp[2];
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v1+4, vertexNormals, 8*v2+4, vertexNormals, 8*v3+4);
+					vertexNormals[8*v+4] += tmp[0];
+					vertexNormals[8*v+5] += tmp[1];
+					vertexNormals[8*v+6] += tmp[2];
 					// The 1-3-4 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexArr, 3*v1, vertexArr, 3*v3, vertexArr, 3*v4);
-					normalsArr[3*v] += tmp[0];
-					normalsArr[3*v+1] += tmp[1];
-					normalsArr[3*v+2] += tmp[2];
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v1+4, vertexNormals, 8*v3+4, vertexNormals, 8*v4+4);
+					vertexNormals[8*v+4] += tmp[0];
+					vertexNormals[8*v+5] += tmp[1];
+					vertexNormals[8*v+6] += tmp[2];
 				}
 				
 				// average all the normals
-				NormalUtils.normalize(normalsArr, 3*v);
+				NormalUtils.normalize(vertexNormals, 8*v+4);
 			}
 		}
+		
+		// generate VBOs
+		FloatBuffer vertexNormalBuf = BufferUtils.asBuffer(vertexNormals);
+		vertexNormalBuf.position(0);
+		int[] allocatedVBO = { 0 };
+		GLES20.glGenBuffers(1, allocatedVBO, 0);
+		if (allocatedVBO[0] <= 0)
+			throw new RuntimeException("Unable to allocate VBO!");
+		vbo = allocatedVBO[0];
+		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+		GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertexNormalBuf.capacity() * 4,
+				vertexNormalBuf, GLES20.GL_STATIC_DRAW);
+		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 		
 		// load the generated data
 		for (TerrainParcel parcel : parcels) {
@@ -305,8 +336,6 @@ public class Terrain3D extends AbstractObject3D {
 				parcel.load();
 			}
 		}
-		vertexBuffer = BufferUtils.asBuffer(vertexArr);
-		normalsBuf = BufferUtils.asBuffer(normalsArr);
 	}
 	
 	
@@ -347,13 +376,14 @@ public class Terrain3D extends AbstractObject3D {
 		GLES20.glUniformMatrix4fv(u_normalMatrix, 1, false, normalMatrix, 0);
 		
 		// send the vertex data to the shader
-		GLES20.glEnableVertexAttribArray(a_position);
+		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
 		GLES20.glVertexAttribPointer(a_position, 3 /* coords */, GLES20.GL_FLOAT, false,
-				3 * 4 /* bytes */, vertexBuffer);
-		
-		GLES20.glEnableVertexAttribArray(a_normal);
+				4 * 4 * 2 /* bytes */, 0);
 		GLES20.glVertexAttribPointer(a_normal, 3 /* coords */, GLES20.GL_FLOAT, false,
-				3 * 4 /* bytes */, normalsBuf);
+				4 * 4 * 2 /* bytes */, 4 * 4);
+		GLES20.glEnableVertexAttribArray(a_position);
+		GLES20.glEnableVertexAttribArray(a_normal);
+		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 		
 		GLES20.glUniform3fv(u_lightPos, 1, lightPosition, 0);
 		
@@ -361,14 +391,16 @@ public class Terrain3D extends AbstractObject3D {
 			if (parcel == null) continue;
 			
 			if (parcel.texture > 0) {
+				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, parcel.vbo);
+				GLES20.glVertexAttribPointer(a_textureCoords, 2, GLES20.GL_FLOAT, false,
+						0 /* bytes */, 0);
+				GLES20.glEnableVertexAttribArray(a_textureCoords);
+				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+				
 				GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 				GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, parcel.texture);
 				GLES20.glUniform1i(u_texture, 0);
 				GLES20.glUniform1i(u_textureEnable, 1);
-				
-				GLES20.glVertexAttribPointer(a_textureCoords, 2, GLES20.GL_FLOAT, false,
-						0, parcel.textureCoordsBuf);
-				GLES20.glEnableVertexAttribArray(a_textureCoords);
 				
 			} else {
 				// disable texture
@@ -383,7 +415,9 @@ public class Terrain3D extends AbstractObject3D {
 			GLES20.glUniform1f(u_shininess, 8.0f);
 			
 			// draw!
-			GLES20.glDrawElements(GLES20.GL_TRIANGLES, parcel.indexCount, GLES20.GL_UNSIGNED_SHORT, parcel.vertexIndicesBuf);
+			GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, parcel.ibo);
+			GLES20.glDrawElements(GLES20.GL_TRIANGLES, parcel.indexCount, GLES20.GL_UNSIGNED_SHORT, 0);
+			GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 	}
 	

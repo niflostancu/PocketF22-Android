@@ -1,5 +1,7 @@
 package ro.pub.dadgm.pf22.render.utils.objloader;
 
+import android.opengl.GLES20;
+
 import java.nio.ShortBuffer;
 
 import ro.pub.dadgm.pf22.render.utils.BufferUtils;
@@ -30,11 +32,11 @@ public class TDModelPart {
 	 * The material to use.
 	 */
 	protected Material material;
-
+	
 	/**
-	 * Buffers to store the indices.
+	 * The IBO allocated for the vertex indices.
 	 */
-	protected ShortBuffer facesBuf;
+	protected int ibo;
 	
 	
 	/**
@@ -56,14 +58,25 @@ public class TDModelPart {
 		this.material = material;
 		
 		// allocate buffers
-		facesBuf = BufferUtils.allocateShortBuffer(faces.length * 2);
+		ShortBuffer facesBuf = BufferUtils.allocateShortBuffer(faces.length * 2);
 		facesBuf.put(faces);
 		facesBuf.position(0);
+
+		// allocate an IBO
+		int[] allocatedIBO = { 0 };
+		GLES20.glGenBuffers(1, allocatedIBO, 0);
+		if (allocatedIBO[0] <= 0)
+			throw new RuntimeException("Unable to allocate IBO!");
+		ibo = allocatedIBO[0];
+		GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, allocatedIBO[0]);
+		GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, facesBuf.capacity() * 2,
+				facesBuf, GLES20.GL_STATIC_DRAW);
+		GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	
 	@SuppressWarnings("unused")
-	public ShortBuffer getFaceBuffer() {
-		return facesBuf;
+	public int getIBO() {
+		return ibo;
 	}
 	
 	@SuppressWarnings("unused")

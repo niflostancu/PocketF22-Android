@@ -106,13 +106,15 @@ public class FighterJet3D extends AbstractObject3D {
 		GLES20.glUniformMatrix4fv(u_normalMatrix, 1, false, normalMatrix, 0);
 		
 		// send the vertex data to the shader
-		GLES20.glEnableVertexAttribArray(a_position);
+		int vbo = modelObj.getVBO();
+		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
 		GLES20.glVertexAttribPointer(a_position, 3 /* coords */, GLES20.GL_FLOAT, false,
-				3 * 4 /* bytes */, modelObj.getVertexBuf());
-		
-		GLES20.glEnableVertexAttribArray(a_normal);
+				4 * 4 * 2 /* bytes */, 0);
 		GLES20.glVertexAttribPointer(a_normal, 3 /* coords */, GLES20.GL_FLOAT, false,
-				3 * 4 /* bytes */, modelObj.getNormalBuf());
+				4 * 4 * 2 /* bytes */, 4 * 4);
+		GLES20.glEnableVertexAttribArray(a_position);
+		GLES20.glEnableVertexAttribArray(a_normal);
+		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 		
 		GLES20.glUniform3fv(u_lightPos, 1, lightPosition, 0);
 		
@@ -123,9 +125,11 @@ public class FighterJet3D extends AbstractObject3D {
 			int texture = mat.loadTexture(MODEL_PATH);
 			
 			if (texture > 0) {
-				GLES20.glEnableVertexAttribArray(a_textureCoords);
+				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, modelObj.getTextureCoordsBuf(mat));
 				GLES20.glVertexAttribPointer(a_textureCoords, 2, GLES20.GL_FLOAT, false,
-						0, modelObj.getTextureCoordsBuf(mat));
+						0 /* bytes */, 0);
+				GLES20.glEnableVertexAttribArray(a_textureCoords);
+				GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 				
 				GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 				GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
@@ -145,7 +149,9 @@ public class FighterJet3D extends AbstractObject3D {
 			GLES20.glUniform1f(u_shininess, mat.getShine());
 			
 			// draw!
-			GLES20.glDrawElements(GLES20.GL_TRIANGLES, part.getFacesCount(), GLES20.GL_UNSIGNED_SHORT, part.getFaceBuffer());
+			GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, part.getIBO());
+			GLES20.glDrawElements(GLES20.GL_TRIANGLES, part.getFacesCount(), GLES20.GL_UNSIGNED_SHORT, 0);
+			GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 	}
 	
