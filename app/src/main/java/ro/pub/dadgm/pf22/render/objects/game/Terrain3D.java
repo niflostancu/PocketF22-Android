@@ -203,7 +203,7 @@ public class Terrain3D extends AbstractObject3D {
 	 * Generates the terrain's vertices, polygons, texture coordinates and normals.
 	 */
 	protected void generateTerrain3D() {
-		int[] dims = terrain.getDimensions();
+		int[] dims = terrain.getMatrixDimensions();
 		float[][] heightMap = terrain.getHeightMap();
 		byte[][] typeMap = terrain.getTypeMap();
 		
@@ -216,8 +216,8 @@ public class Terrain3D extends AbstractObject3D {
 				int v = (i * dims[1] + j); // the current vertex
 				
 				// fill in the vertex array
-				vertexNormals[8*v] = i; // x
-				vertexNormals[8*v+1] = j; // y
+				vertexNormals[8*v] = i * Terrain.UNIT_SCALE; // x
+				vertexNormals[8*v+1] = j * Terrain.UNIT_SCALE; // y
 				vertexNormals[8*v+2] = heightMap[i][j]; // z
 				
 				// compute the triangles
@@ -236,7 +236,7 @@ public class Terrain3D extends AbstractObject3D {
 					parcel.addTriangle(v, v3, v4);
 					
 					// compute texture coordinates for the triangle's vertices
-					final float texScale = 1/3f;
+					final float texScale = 0.8f;
 					parcel.addTextureCoordinate(v, j*texScale, i*texScale);
 					parcel.addTextureCoordinate(v2, j*texScale, (i+1f)*texScale);
 					parcel.addTextureCoordinate(v3, (j+1f)*texScale, (i+1f)*texScale);

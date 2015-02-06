@@ -40,6 +40,11 @@ public class Terrain extends BaseModel implements CollisionObject {
 			{ "mountain", "mountain.png", World.WORLD_MAX_HEIGHT / 2.5f, World.WORLD_MAX_HEIGHT },
 	};
 	
+	/**
+	 * The world-unit dimensions of a terrain quad.
+	 */
+	public final static float UNIT_SCALE = 10f;
+	
 	
 	// terrain attributes
 	
@@ -93,12 +98,12 @@ public class Terrain extends BaseModel implements CollisionObject {
 		generateFractalMap();
 		generateTypeMap();
 	}
-
+	
 	/**
 	 * Generates terrain using the <a href="http://www.javaworld.com/article/2076745">Diamond-Square Algorithm</a>.
 	 */
 	private void generateFractalMap() {
-		final float roughness = 0.4f;
+		final float roughness = 0.6f;
 		final int lod = FRACTAL_LOD;
 		
 		int divisions = 1 << lod;
@@ -331,7 +336,7 @@ public class Terrain extends BaseModel implements CollisionObject {
 	 * @param length Kernel matrix's length.
 	 * @param weight Blur's weight (sigma).
 	 */
-	public static float[][] makeGaussianKernel(int length, float weight) {
+	protected static float[][] makeGaussianKernel(int length, float weight) {
 		float[][] kernel = new float[length][length];
 		float sumTotal = 0;
 		
@@ -444,16 +449,25 @@ public class Terrain extends BaseModel implements CollisionObject {
 	// getters / setters
 	
 	/**
-	 * Returns the height map's dimensions.
+	 * Returns the height map matrix's dimensions.
 	 * 
-	 * @return The map's dimensions as a 2-element array (width, length).
+	 * @return The map matrix dimensions as a 2-element array (width, length).
 	 */
-	public synchronized int[] getDimensions() {
+	public synchronized int[] getMatrixDimensions() {
 		return new int[] { dimensions[0], dimensions[1] };
 	}
 	
 	/**
-	 * Returns the generated height map.
+	 * Returns the height map's real (scaled) dimensions.
+	 *
+	 * @return The map's real dimensions as a 2-element array (width, length).
+	 */
+	public synchronized float[] getDimensions() {
+		return new float[] { dimensions[0] * UNIT_SCALE, dimensions[1] * UNIT_SCALE };
+	}
+	
+	/**
+	 * Returns the generated height map (unscaled).
 	 * 
 	 * <p>The map should not be modified!</p>
 	 * 
@@ -462,7 +476,7 @@ public class Terrain extends BaseModel implements CollisionObject {
 	public synchronized float[][] getHeightMap() {
 		return heightMap;
 	}
-
+	
 	/**
 	 * Returns the generated terrain type map.
 	 * 
@@ -495,6 +509,20 @@ public class Terrain extends BaseModel implements CollisionObject {
 		return maxHeight;
 	}
 	
+	/**
+	 * Returns the specified point's height.
+	 * 
+	 * @param x The X coordinate of the point (world units / scaled).
+	 * @param y The Y coordinate of the point (world units / scaled).
+	 * @return Height map's value at the specified point (after scaling).
+	 */
+	public synchronized float getHeightAt(float x, float y) {
+		int i = (int)(x / UNIT_SCALE);
+		int j = (int)(y / UNIT_SCALE);
+		
+		return heightMap[i][j];
+	}
+	
 	
 	@Override
 	public boolean collidesWith(CollisionObject obj) {
@@ -504,12 +532,12 @@ public class Terrain extends BaseModel implements CollisionObject {
 			// get the elevation at the specified position
 			float[] position = mobileObj.getPosition().toArray();
 			if (position[0] < 0 || position[1] < 0 || 
-					position[0] >= dimensions[0] || position[1] >= dimensions[1]) {
+					position[0] >= dimensions[0]*UNIT_SCALE || position[1] >= dimensions[1]*UNIT_SCALE) {
 				// out of bounds, so it can't collide
 				return false;
 			}
 			
-			float height = heightMap[(int)position[0]][(int)position[0]];
+			float height = getHeightAt(position[0], position[1]);
 			if (position[2] <= height) {
 				return true;
 			}

@@ -402,7 +402,7 @@ public class Game implements Serializable {
 				public void run() {
 					// check object's bounds
 					float[] position = object.getPosition().toArray();
-					int[] dimensions = world.getTerrain().getDimensions();
+					float[] dimensions = world.getTerrain().getDimensions();
 					
 					// clamp the position
 					if (position[0] < 0 || position[1] < 0 ||
@@ -438,7 +438,7 @@ public class Game implements Serializable {
 						if (object instanceof Plane) {
 							// clamp the object's height
 							object.getPosition().setZ(World.WORLD_MAX_HEIGHT);
-							((Plane)object).setPitch(-45);
+							((Plane)object).setPitch(45);
 							
 						} else if (object instanceof Projectile) {
 							// destroy/hide the projectile

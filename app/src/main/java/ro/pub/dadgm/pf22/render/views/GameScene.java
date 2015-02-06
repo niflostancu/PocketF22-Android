@@ -488,8 +488,8 @@ public class GameScene implements View {
 			
 			// update the 3D camera
 			//Matrix.frustumM(camera.getProjectionMatrix(), 0,
-			//		-ratio, ratio, -1f, 1f, 2f, 100f );
-			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 0.001f, 300f);
+			//		-ratio, ratio, -1f, 1f, 1f, 400f );
+			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 0.001f, 500f);
 			
 			// realign hud objects
 			for (Object[] objProps: hudObjectsTemplate) {
@@ -655,7 +655,7 @@ public class GameScene implements View {
 		float[] position = player.getPosition().toArray();
 		
 		// compute camera's facing direction
-		float[] initialPoint = new float[] { -0.02f, 0, 0.01f, 1 };
+		float[] initialPoint = new float[] { -2f, 0, 1f, 1 };
 		float[] resPoint = new float[4];
 		
 		// set the camera to a position around the player's plane
@@ -671,7 +671,7 @@ public class GameScene implements View {
 		
 		Matrix.setLookAtM(camera.getViewMatrix(), 0, 
 				resPoint[0], resPoint[1], resPoint[2],
-				position[0], position[1], position[2] + 0.005f, 
+				position[0], position[1], position[2] + 0.5f, 
 				0f, 0.0f, 1.0f );
 		
 		shaderManager3D.notifyCameraChanged(camera);
