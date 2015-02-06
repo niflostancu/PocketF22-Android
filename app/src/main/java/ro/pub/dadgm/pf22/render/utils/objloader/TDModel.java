@@ -44,7 +44,7 @@ public class TDModel {
 	/**
 	 * The allocated VBO with the vertex data.
 	 */
-	protected Integer vbo;
+	protected int vbo;
 	
 	
 	
@@ -63,6 +63,17 @@ public class TDModel {
 		this.vn = vn;
 		this.vt = vt;
 		this.parts = parts;
+	}
+	
+	/**
+	 * Initializes the VBOs.
+	 * 
+	 * <p>If the VBOs are valid, returns immediately.</p>
+	 */
+	public void initializeBuffers() {
+		// check if already initialized
+		if (GLES20.glIsBuffer(vbo))
+			return;
 		
 		// compute the normals buffer from the parts
 		float[] vNormals = new float[numVertices() * 3];
@@ -132,18 +143,23 @@ public class TDModel {
 			// allocate a VBO
 			allocatedVBO[0] = 0;
 			GLES20.glGenBuffers(1, allocatedVBO, 0);
-			if (allocatedVBO[0] <= 0) 
+			if (allocatedVBO[0] <= 0)
 				throw new RuntimeException("Unable to allocate VBO!");
 			
 			GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, allocatedVBO[0]);
-			GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, buf.capacity() * 4, 
+			GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, buf.capacity() * 4,
 					buf, GLES20.GL_STATIC_DRAW);
 			GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 			
 			textureCoordsVBO.put(texCoordsEntry.getKey(), allocatedVBO[0]);
 		}
+		
+		// initialize the IBO for all parts
+		for (TDModelPart part: parts) {
+			part.initializeBuffers();
+		}
 	}
-
+	
 	/**
 	 * Returns the vertex count of the object.
 	 * 

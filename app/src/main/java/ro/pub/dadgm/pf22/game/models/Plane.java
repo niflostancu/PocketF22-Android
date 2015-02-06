@@ -208,8 +208,8 @@ public class Plane extends BaseMobileModel {
 	public synchronized Vector3D getVelocity() {
 		float[] tmpMatrix = new float[16];
 		Matrix.setIdentityM(tmpMatrix, 0);
-		Matrix.rotateM(tmpMatrix, 0, pitch, 1, 0, 0);
 		Matrix.rotateM(tmpMatrix, 0, yaw, 0, 0, 1f);
+		Matrix.rotateM(tmpMatrix, 0, pitch, 0, 1, 0);
 		
 		float[] velocityArr = new float[]{ speed, 0, 0, 0 };
 		float[] direction = new float[4];

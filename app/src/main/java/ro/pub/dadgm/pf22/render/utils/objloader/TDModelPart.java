@@ -56,12 +56,23 @@ public class TDModelPart {
 		this.vtPointer = vtPointer;
 		this.vnPointer = vnPointer;
 		this.material = material;
+	}
+	
+	/**
+	 * Initializes the VBOs.
+	 *
+	 * <p>If the VBOs are valid, returns immediately.</p>
+	 */
+	public void initializeBuffers() {
+		// check if already initialized
+		if (GLES20.glIsBuffer(ibo)) 
+			return;
 		
 		// allocate buffers
 		ShortBuffer facesBuf = BufferUtils.allocateShortBuffer(faces.length * 2);
 		facesBuf.put(faces);
 		facesBuf.position(0);
-
+		
 		// allocate an IBO
 		int[] allocatedIBO = { 0 };
 		GLES20.glGenBuffers(1, allocatedIBO, 0);

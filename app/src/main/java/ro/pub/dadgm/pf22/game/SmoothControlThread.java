@@ -41,13 +41,13 @@ public class SmoothControlThread extends Thread {
 	/**
 	 * The control step, in milliseconds. 
 	 */
-	public final static int PLANE_CONTROL_STEP = 100; // milliseconds
+	public final static int PLANE_CONTROL_STEP = 30; // milliseconds
 	
 	/**
 	 * The delta control to execute per thread loop.
 	 */
-	public final static float PLANE_PITCH_DELTA = 0.5f; // delta per step
-	public final static float PLANE_YAW_DELTA = 1.0f; // delta per step
+	public final static float PLANE_PITCH_DELTA = 1.0f; // delta per step
+	public final static float PLANE_YAW_DELTA = 2.0f; // delta per step
 	
 	
 	/**

@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
@@ -211,6 +212,11 @@ public class GameScene implements View {
 	 */
 	final protected IdentityHashMap<BaseModel, Object3D> modelObjects;
 	
+	/**
+	 * Whether the view is initialized.
+	 */
+	AtomicBoolean initialized = new AtomicBoolean(false);
+	
 	
 	/**
 	 * Constructs the main menu of the game.
@@ -245,6 +251,8 @@ public class GameScene implements View {
 	 */
 	@Override
 	public void onActivate() {
+		initialized.set(false);
+		
 		// clean up structures first
 		ShaderLoader.clear();
 		TextureLoader.clear();
@@ -394,10 +402,14 @@ public class GameScene implements View {
 		
 		// initialize the camera
 		cameraAngle[0] = cameraAngle[1] = 0;
+		
+		initialized.set(true);
 	}
 	
 	@Override
 	public void onClose() {
+		initialized.set(false);
+		
 		synchronized (modelObjects) {
 			modelObjects.clear();
 		}
@@ -506,6 +518,9 @@ public class GameScene implements View {
 		if ( e.getAction() == MotionEvent.ACTION_DOWN ||
 				e.getAction() == MotionEvent.ACTION_UP ||
 				e.getAction() == MotionEvent.ACTION_MOVE ) {
+			
+			if (!initialized.get())
+				return true;
 			
 			HUDObject target = null;
 			synchronized (lock) {

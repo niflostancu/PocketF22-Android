@@ -59,25 +59,25 @@ public class GameSceneController implements Controller {
 		actions.put("hud_steer_left", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(20, 0));
+				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(+45, 0));
 			}
 		});
 		actions.put("hud_steer_right", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(-20, 0));
+				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(-45, 0));
 			}
 		});
 		actions.put("hud_pitch_up", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(0, 5));
+				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(0, -20));
 			}
 		});
 		actions.put("hud_pitch_down", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(0, -5));
+				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(0, +20));
 			}
 		});
 		
