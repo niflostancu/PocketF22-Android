@@ -6,11 +6,15 @@ import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 
 import java.util.Collections;
+import java.util.IdentityHashMap;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
 import ro.pub.dadgm.pf22.game.Game;
+import ro.pub.dadgm.pf22.game.models.BaseModel;
+import ro.pub.dadgm.pf22.game.models.EnemyPlane;
 import ro.pub.dadgm.pf22.game.models.PrimaryPlane;
+import ro.pub.dadgm.pf22.game.models.Projectile;
 import ro.pub.dadgm.pf22.game.models.World;
 import ro.pub.dadgm.pf22.render.Camera;
 import ro.pub.dadgm.pf22.render.Scene3D;
@@ -19,6 +23,7 @@ import ro.pub.dadgm.pf22.render.View;
 import ro.pub.dadgm.pf22.render.objects.Object3D;
 import ro.pub.dadgm.pf22.render.objects.ObjectsManager;
 import ro.pub.dadgm.pf22.render.objects.game.FighterJet3D;
+import ro.pub.dadgm.pf22.render.objects.game.RocketProjectile3D;
 import ro.pub.dadgm.pf22.render.objects.game.Terrain3D;
 import ro.pub.dadgm.pf22.render.objects.hud.HUDButton;
 import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
@@ -29,6 +34,7 @@ import ro.pub.dadgm.pf22.render.objects.hud.MenuOverlay;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
+import ro.pub.dadgm.pf22.utils.events.CollectionListener;
 
 /**
  * The view for the game's 3D scene.
@@ -200,6 +206,11 @@ public class GameScene implements View {
 	 */
 	protected PrimaryPlane player;
 	
+	/**
+	 * Maps model object instances to their associated 3D view objects.
+	 */
+	final protected IdentityHashMap<BaseModel, Object3D> modelObjects;
+	
 	
 	/**
 	 * Constructs the main menu of the game.
@@ -222,6 +233,8 @@ public class GameScene implements View {
 		// initialize the shader manager
 		shaderManager3D = new ShaderManager();
 		shaderManagerHUD = new ShaderManager();
+		
+		modelObjects = new IdentityHashMap<>();
 		
 		// draw text library
 		drawText = new DrawText(gameHUD);
@@ -262,11 +275,66 @@ public class GameScene implements View {
 		player = world.getPlayer();
 		
 		// initialize the scene objects
-		FighterJet3D testJet = new FighterJet3D(gameScene3D, player, "fighter", 0);
-		objects.add(testJet);
-		
 		Terrain3D terrain = new Terrain3D(gameScene3D, world.getTerrain(), "terrain", 0);
 		objects.add(terrain);
+		
+		FighterJet3D primaryJet = new FighterJet3D(gameScene3D, player, "fighter", 0);
+		objects.add(primaryJet);
+		
+		world.addEnemyCollectionListener(new CollectionListener<EnemyPlane>() {
+			@Override
+			public void onObjectAdded(EnemyPlane object) {
+				synchronized (modelObjects) {
+					FighterJet3D planeObject = new FighterJet3D(gameScene3D, object, "enemy_fighter", 0);
+					objects.add(planeObject);
+					modelObjects.put(object, planeObject);
+				}
+			}
+			@Override
+			public void onObjectRemoved(EnemyPlane object) {
+				synchronized (modelObjects) {
+					if (!modelObjects.containsKey(object))
+						return;
+					objects.remove(modelObjects.get(object));
+					modelObjects.remove(object);
+				}
+			}
+		});
+		synchronized (modelObjects) {
+			for (EnemyPlane plane : world.getEnemyPlanes()) {
+				FighterJet3D planeObject = new FighterJet3D(gameScene3D, plane, "enemy_fighter", 0);
+				objects.add(planeObject);
+				modelObjects.put(plane, planeObject);
+			}
+		}
+		
+		world.addProjectileCollectionListener(new CollectionListener<Projectile>() {
+			@Override
+			public void onObjectAdded(Projectile object) {
+				synchronized (modelObjects) {
+					RocketProjectile3D planeObject = new RocketProjectile3D(gameScene3D, object, "projectile", 0);
+					objects.add(planeObject);
+					modelObjects.put(object, planeObject);
+				}
+			}
+			@Override
+			public void onObjectRemoved(Projectile object) {
+				synchronized (modelObjects) {
+					if (!modelObjects.containsKey(object))
+						return;
+					objects.remove(modelObjects.get(object));
+					modelObjects.remove(object);
+				}
+			}
+		});
+		synchronized (modelObjects) {
+			for (Projectile projectile : world.getProjectiles()) {
+				RocketProjectile3D projectileObject = new RocketProjectile3D(gameScene3D, projectile, "projectile", 0);
+				objects.add(projectileObject);
+				modelObjects.put(projectile, projectileObject);
+			}
+		}
+		
 		
 		hudObjectsTemplate = new Object[][]{
 				// { object, position, [size] }
@@ -330,6 +398,10 @@ public class GameScene implements View {
 	
 	@Override
 	public void onClose() {
+		synchronized (modelObjects) {
+			modelObjects.clear();
+		}
+		
 		// destroy the objects
 		for (Object3D obj: objects) {
 			obj.destroy();
@@ -405,7 +477,7 @@ public class GameScene implements View {
 			// update the 3D camera
 			//Matrix.frustumM(camera.getProjectionMatrix(), 0,
 			//		-ratio, ratio, -1f, 1f, 2f, 100f );
-			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 0.001f, 100f);
+			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 0.001f, 300f);
 			
 			// realign hud objects
 			for (Object[] objProps: hudObjectsTemplate) {
@@ -568,7 +640,7 @@ public class GameScene implements View {
 		float[] position = player.getPosition().toArray();
 		
 		// compute camera's facing direction
-		float[] initialPoint = new float[] { -0.002f, 0, 0.001f, 1 };
+		float[] initialPoint = new float[] { -0.02f, 0, 0.01f, 1 };
 		float[] resPoint = new float[4];
 		
 		// set the camera to a position around the player's plane
@@ -584,7 +656,7 @@ public class GameScene implements View {
 		
 		Matrix.setLookAtM(camera.getViewMatrix(), 0, 
 				resPoint[0], resPoint[1], resPoint[2],
-				position[0], position[1], position[2] + 0.0005f, 
+				position[0], position[1], position[2] + 0.005f, 
 				0f, 0.0f, 1.0f );
 		
 		shaderManager3D.notifyCameraChanged(camera);

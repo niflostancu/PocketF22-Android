@@ -3,6 +3,7 @@ package ro.pub.dadgm.pf22.game;
 import android.util.Log;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import ro.pub.dadgm.pf22.activity.MainActivity;
 import ro.pub.dadgm.pf22.game.models.*;
@@ -36,7 +37,13 @@ public class Game implements Serializable {
 		MEDIUM,
 		HARD
 	}
-	
+
+	/**
+	 * The number of planer per difficulty level.
+	 */
+	public static final int NUM_PLANES_EASY = 5, 
+			NUM_PLANES_MEDIUM = 5,
+			NUM_PLANES_HARD = 15;
 	
 	/**
 	 * Whether the game is running or has been stopped / paused.
@@ -147,8 +154,28 @@ public class Game implements Serializable {
 				/*(float) Math.random() * (World.WORLD_MAX_HEIGHT/3 - terrain.getMaxHeight()) + 
 						terrain.getMaxHeight()*/ terrain.getMaxHeight() + 2f );
 		
-		// TODO: generate the enemy planes
+		// generate the enemy planes
+		int numEnemyPlanes = NUM_PLANES_EASY;
+		switch (difficulty) {
+			case MEDIUM: numEnemyPlanes = NUM_PLANES_MEDIUM; break;
+			case HARD: numEnemyPlanes = NUM_PLANES_HARD; break;
+		}
 		
+		for (int i=0; i<numEnemyPlanes; i++) {
+			EnemyPlane enemy = new EnemyPlane();
+			boolean firstPos = true;
+			
+			while (firstPos || checkCollisions(enemy, world.getCollidableObjects())) {
+				firstPos = false;
+				enemy.getPosition().setCoordinates(
+						(float) Math.random() * (World.WORLD_WIDTH_X / 2) + World.WORLD_WIDTH_X / 4,
+						(float) Math.random() * (World.WORLD_WIDTH_Y / 2) + World.WORLD_WIDTH_Y / 4,
+						terrain.getMaxHeight() + (float)Math.random()*5 + 1f);
+				enemy.steer((float)Math.random()*360);
+			}
+			
+			world.addPlane(enemy);
+		}
 		
 		initializeTransientObjects();
 		
@@ -157,6 +184,22 @@ public class Game implements Serializable {
 		smoothControl.start();
 		
 		status = GameStatus.RUNNING;
+	}
+	
+	
+	/**
+	 * Checks a single object for collisions with a collection.
+	 * 
+	 * @param object The object to verify.
+	 * @param collection The collection to check.
+	 * @return True if the object collides, false otherwise.
+	 */
+	protected boolean checkCollisions(CollisionObject object, Collection<CollisionObject> collection) {
+		for (CollisionObject object2: collection) {
+			if (object.collidesWith(object2))
+				return true;
+		}
+		return false;
 	}
 	
 	/**

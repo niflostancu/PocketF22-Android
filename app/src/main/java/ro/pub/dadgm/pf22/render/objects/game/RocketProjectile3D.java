@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import ro.pub.dadgm.pf22.activity.MainActivity;
-import ro.pub.dadgm.pf22.game.models.Plane;
+import ro.pub.dadgm.pf22.game.models.Projectile;
 import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.objects.AbstractObject3D;
 import ro.pub.dadgm.pf22.render.utils.objloader.Material;
@@ -17,14 +17,14 @@ import ro.pub.dadgm.pf22.render.utils.objloader.TDModelPart;
 import ro.pub.dadgm.pf22.render.views.GameScene;
 
 /**
- * Implements a 3D fighter jet model.
+ * Implements a 3D rocket projectile model.
  */
-public class FighterJet3D extends AbstractObject3D {
+public class RocketProjectile3D extends AbstractObject3D {
 	
 	/**
 	 * The asset path of the model's resources.
 	 */
-	protected final static String MODEL_PATH = "objects/f22_raptor/";
+	protected final static String MODEL_PATH = "objects/rocket/";
 	
 	/**
 	 * The fighter jet's model object.
@@ -34,48 +34,46 @@ public class FighterJet3D extends AbstractObject3D {
 	/**
 	 * The plane model object.
 	 */
-	protected Plane plane;
+	protected Projectile projectile;
 	
 	/**
-	 * Initializes the fighter jet 3D object.
+	 * Initializes the rocket 3D object.
+	 * 
 	 *  @param scene The parent scene object.
-	 * @param plane The plane's model object.
+	 * @param projectile The projectile's model object.
 	 * @param tag An optional tag.
 	 * @param priority An optional priority.
 	 */
-	public FighterJet3D(Scene3D scene, Plane plane, String tag, int priority) {
+	public RocketProjectile3D(Scene3D scene, Projectile projectile, String tag, int priority) {
 		super(scene, tag, priority);
 		
-		this.plane = plane;
+		this.projectile = projectile;
 		
 		// get shader program
 		shader = scene.getShaderManager().getShader("s3d_tex_phong");
 		
 		// load the object's assets
 		OBJParser parser = new OBJParser();
-		InputStream modelStream, materialStream;
+		InputStream modelStream/*, materialStream*/;
 		try {
 			modelStream = MainActivity.getAppContext().getAssets().open(MODEL_PATH + "model.obj");
-			materialStream = MainActivity.getAppContext().getAssets().open(MODEL_PATH + "materials.mtl");
+			// materialStream = MainActivity.getAppContext().getAssets().open(MODEL_PATH + "materials.mtl");
 			
 		} catch (IOException e) {
-			throw new RuntimeException("Unable to read fighter jet model file!", e);
+			throw new RuntimeException("Unable to read fighter rocket model file!", e);
 		}
 		if (modelObj == null)
-			modelObj = parser.parseOBJ(modelStream, materialStream);
+			modelObj = parser.parseOBJ(modelStream, null);
 	}
 	
 	@Override
 	public void draw() {
-		float[] position = plane.getPosition().toArray();
+		float[] position = projectile.getPosition().toArray();
 		
 		Matrix.setIdentityM(modelMatrix, 0);
 		Matrix.translateM(modelMatrix, 0, position[0], position[1], position[2]);
-		Matrix.scaleM(modelMatrix, 0, 1/1900f, 1/1900f, 1/1900f);
-		Matrix.rotateM(modelMatrix, 0, plane.getYaw(), 0, 0, 1);
-		Matrix.rotateM(modelMatrix, 0, -plane.getPitch(), 0, 1, 0);
-		Matrix.rotateM(modelMatrix, 0, plane.getRoll(), 1, 0, 0);
-		Matrix.rotateM(modelMatrix, 0, -90, 0, 0, 1);
+		Matrix.scaleM(modelMatrix, 0, 1 / 100000f, 1 / 100000f, 1 / 100000f);
+		// Matrix.rotateM(modelMatrix, 0, -90, 0, 0, 1);
 		
 		float[] lightPosition = GameScene.LIGHT_POSITION;
 		float[] normalMatrix = scene.getCamera().computeNormalMatrix(modelMatrix);
@@ -119,7 +117,11 @@ public class FighterJet3D extends AbstractObject3D {
 		// send the faces (parts)
 		for (TDModelPart part: modelObj.getParts()) {
 			// load the texture
-			Material mat = part.getMaterial();
+			Material mat = new Material("rocket");
+			mat.setAmbientColor(0.3f, 0.3f, 0.3f);
+			mat.setDiffuseColor(1, 1, 1);
+			mat.setSpecularColor(0.7f, 0.7f, 0.7f);
+			
 			int texture = mat.loadTexture(MODEL_PATH);
 			
 			if (texture > 0) {

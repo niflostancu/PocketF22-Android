@@ -28,17 +28,17 @@ public class Plane extends BaseMobileModel {
 	/**
 	 * Plane's length (from back to front).
 	 */
-	public final float PLANE_LENGTH = 19 / 19000.0f; // mesh length: 19
+	public final float PLANE_LENGTH = 19 / 1900.0f; // mesh length: 19
 	
 	/**
 	 * Plane's side width (from wing to wing).
 	 */
-	public final float PLANE_WIDTH = 13 / 19000.0f; // mesh width: 13
+	public final float PLANE_WIDTH = 13 / 1900.0f; // mesh width: 13
 	
 	/**
 	 * Plane's height.
 	 */
-	public final float PLANE_HEIGHT = 4 / 19000.0f; // mesh height: 4
+	public final float PLANE_HEIGHT = 4 / 1900.0f; // mesh height: 4
 	
 	
 	// beside position and velocity, a plane has several other attributes.

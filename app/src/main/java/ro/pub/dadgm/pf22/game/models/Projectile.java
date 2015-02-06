@@ -11,14 +11,28 @@ public class Projectile extends BaseMobileModel {
 	/**
 	 * Defines a projectile's collision dimensions.
 	 */
-	public final float PROJECTILE_DIMS = 0.2f;
+	public final static float PROJECTILE_DIMS = 0.2f;
+	
+	/**
+	 * Defines the possible projectile types.
+	 */
+	public static enum ProjectileType {
+		PROJECTILE_ROCKET, 
+		PROJECTILE_BULLETS
+	}
+	
+	
+	/**
+	 * Projectile's type.
+	 */
+	protected ProjectileType type;
 	
 	
 	/**
 	 * Model object constructor.
 	 */
-	public Projectile() {
-		// empty
+	public Projectile(ProjectileType type) {
+		this.type = type;
 	}
 	
 	
@@ -28,6 +42,7 @@ public class Projectile extends BaseMobileModel {
 	public BoundingBox3D getBoundingBox() {
 		return new BoundingBox3D(position, new float[]{ PROJECTILE_DIMS, PROJECTILE_DIMS, PROJECTILE_DIMS });
 	}
+	
 	
 	@Override
 	public boolean collidesWith(CollisionObject obj) {
@@ -47,7 +62,16 @@ public class Projectile extends BaseMobileModel {
 		return false;
 	}
 	
+	
 	// getters / setters
 	
+	/**
+	 * Returns the projectile type.
+	 * 
+	 * @return Projectile's type.
+	 */
+	public ProjectileType getType() {
+		return type;
+	}
 	
 }
