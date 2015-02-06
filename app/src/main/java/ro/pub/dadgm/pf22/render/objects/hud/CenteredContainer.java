@@ -49,6 +49,8 @@ public class CenteredContainer extends HUDObject {
 	
 	@Override
 	public void draw() {
+		if (!visibility) return;
+		
 		// draw all children objects
 		objects.drawAll();
 	}
@@ -57,6 +59,13 @@ public class CenteredContainer extends HUDObject {
 	public void setDimensions(float width, float height) {
 		super.setDimensions(width, height);
 		repositionObjects();
+	}
+	
+	@Override
+	public void destroy() {
+		for (HUDObject object: objects) {
+			object.destroy();
+		}
 	}
 	
 	

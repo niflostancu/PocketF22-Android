@@ -158,7 +158,7 @@ public class MainMenu implements View, Scene3D {
 		
 		final Object[][] centeredObjects = new Object[][]{
 				// { object, position, size }
-				{ new MenuTitle(this, "text", 3), new float[]{ 0f, 9.5f, 5f }, new float[]{ 0, 1 } }, 
+				{ new MenuTitle(this, "text", 3, "Pocket F22", "v0.2 beta"), new float[]{ 0f, 9.5f, 5f }, new float[]{ 0, 1 } }, 
 		};
 		menuObjects = new MenuItem[]{
 				// uses the priority to establish the order of the items
@@ -202,6 +202,7 @@ public class MainMenu implements View, Scene3D {
 	@Override
 	public void draw() {
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 		
 		Game game = controller.getGame();
 		

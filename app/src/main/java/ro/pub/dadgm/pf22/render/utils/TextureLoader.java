@@ -54,7 +54,33 @@ public class TextureLoader {
 		
 		return texture[0];
 	}
-
+	
+	/**
+	 * Loads texture from a bitmap resource but stores it into the local cache using the specified 
+	 * key.
+	 * 
+	 * @param bitmap The bitmap to load. Can be null to force retrieval from cache (if it exists).
+	 * @param cacheKey The cache key to prevent loading it multiple times.
+	 * @return Texture's handle (0 if load failed).
+	 */
+	@SuppressWarnings("unused")
+	public static int loadTextureCached(Bitmap bitmap, String cacheKey) {
+		if (textureCache.containsKey(cacheKey)) {
+			return textureCache.get(cacheKey);
+		}
+		
+		// load the texture
+		if (bitmap == null) 
+			return 0;
+		
+		int texture = loadTexture(bitmap);
+		if (texture != 0) {
+			// add it to cache
+			textureCache.put(cacheKey, texture);
+		}
+		return texture;
+	}
+	
 	/**
 	 * Unloads the specified texture from GPU memory.
 	 * 
@@ -80,6 +106,7 @@ public class TextureLoader {
 	 * @param resourceId The ID of the resource to read.
 	 * @return Texture's handle (0 if load failed).
 	 */
+	@SuppressWarnings("unused")
 	public static int loadTextureFromResource(int resourceId) {
 		// check the cache if the texture was already loaded
 		String cacheKey = "res_" + resourceId;

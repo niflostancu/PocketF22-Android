@@ -5,6 +5,8 @@ import android.opengl.Matrix;
 import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 
+import java.util.Collections;
+
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.activity.controllers.GameSceneController;
 import ro.pub.dadgm.pf22.game.Game;
@@ -18,7 +20,12 @@ import ro.pub.dadgm.pf22.render.objects.Object3D;
 import ro.pub.dadgm.pf22.render.objects.ObjectsManager;
 import ro.pub.dadgm.pf22.render.objects.game.FighterJet3D;
 import ro.pub.dadgm.pf22.render.objects.game.Terrain3D;
+import ro.pub.dadgm.pf22.render.objects.hud.HUDButton;
 import ro.pub.dadgm.pf22.render.objects.hud.HUDObject;
+import ro.pub.dadgm.pf22.render.objects.hud.HUDText;
+import ro.pub.dadgm.pf22.render.objects.hud.MenuContainer;
+import ro.pub.dadgm.pf22.render.objects.hud.MenuItem;
+import ro.pub.dadgm.pf22.render.objects.hud.MenuOverlay;
 import ro.pub.dadgm.pf22.render.utils.DrawText;
 import ro.pub.dadgm.pf22.render.utils.ShaderLoader;
 import ro.pub.dadgm.pf22.render.utils.TextureLoader;
@@ -50,7 +57,7 @@ public class GameScene implements View {
 			return null;
 		}
 	}
-
+	
 	/**
 	 * The Scene3D implementation to be offered to the HUD objects.
 	 */
@@ -72,7 +79,7 @@ public class GameScene implements View {
 	}
 	
 	// several constants
-
+	
 	/**
 	 * The global light's position.
 	 */
@@ -82,6 +89,7 @@ public class GameScene implements View {
 	 * The list of HUD shaders to register.
 	 */
 	protected static final Object[][] REGISTER_SHADERS_HUD = {
+			{ "simple_color", R.raw.simple_color_v, R.raw.simple_color_f },
 			{ "simple_tex", R.raw.simple_tex_v, R.raw.simple_tex_f },
 			{ "draw_text", R.raw.draw_text_v, R.raw.draw_text_f }
 	};
@@ -153,6 +161,18 @@ public class GameScene implements View {
 	protected HUDObject currentHover = null, initialClick = null;
 	
 	/**
+	 * The template with the hud objects to draw.
+	 * 
+	 * <p>Format: { object, position, [size] }</p>
+	 */
+	protected Object[][] hudObjectsTemplate;
+	
+	/**
+	 * Reference to the menu container object.
+	 */
+	protected MenuContainer menuContainer;
+	
+	/**
 	 * Lock used for Activity/Renderer threads synchronization.
 	 * 
 	 * <p>Used to protect the read consistency of the camera and objects collection.</p>
@@ -169,6 +189,11 @@ public class GameScene implements View {
 	 * The initial coordinates on touch down.
 	 */
 	protected float[] initialTouchPoint = new float[2];
+	
+	/**
+	 * Reference to the current Game.
+	 */
+	protected Game game;
 	
 	/**
 	 * Player's model object.
@@ -232,7 +257,7 @@ public class GameScene implements View {
 			shaderManagerHUD.registerShader(name, vertexRes, fragmentRes);
 		}
 		
-		Game game = controller.getGame();
+		game = controller.getGame();
 		World world = game.getWorld();
 		player = world.getPlayer();
 		
@@ -242,6 +267,45 @@ public class GameScene implements View {
 		
 		Terrain3D terrain = new Terrain3D(gameScene3D, world.getTerrain(), "terrain", 0);
 		objects.add(terrain);
+		
+		hudObjectsTemplate = new Object[][]{
+				// { object, position, [size] }
+				{ new HUDText(gameHUD, "ingame_hud", 0, "Score: 0" ), new float[]{ 3.1f, 9.18f, 0f } },
+				
+				{ new HUDButton(gameHUD, "ingame_hud", 0, "R", controller.getAction("hud_shoot_missile") ), new float[]{ 0.4f, 0.4f, 0f } },
+				{ new HUDButton(gameHUD, "ingame_hud", 0, "G", controller.getAction("hud_shoot_gun") ), new float[]{ -1.1f, 0.4f, 0f } },
+				
+				{ new HUDButton(gameHUD, "ingame_hud", 0, "M", controller.getAction("hud_pause") ), new float[]{ 0.4f, 9.1f, 0f } },
+				
+				{ new MenuOverlay(gameHUD, "paused_menu_overlay", -10 ), new float[]{ 0, 0, 0f }, new float[] { 10f, 10f } },
+		};
+		MenuItem[] menuObjects = new MenuItem[]{
+				// uses the priority to establish the order of the items
+				new MenuItem(gameHUD, "menu_item", 0, "Resume", controller.getAction("menu_resume")),
+				new MenuItem(gameHUD, "menu_item", 1, "Calibrate", controller.getAction("menu_calibrate")),
+				new MenuItem(gameHUD, "menu_item", 2, "Exit", controller.getAction("menu_exit")),
+		};
+		
+		for (Object[] objProps: hudObjectsTemplate) {
+			HUDObject hudObject = (HUDObject)objProps[0];
+			if (objProps.length > 1) {
+				float[] position = (float[]) objProps[1];
+				hudObject.position().setCoordinates(position[0], position[1], position[2]);
+			}
+			if (objProps.length > 2) {
+				float[] size = (float[]) objProps[2];
+				hudObject.setDimensions(size[0], size[1]);
+			}
+			hudObject.updateBoundingBox();
+			
+			hudObjects.add(hudObject);
+		}
+		
+		menuContainer = new MenuContainer(gameHUD, "paused_menu", 0);
+		menuContainer.position().setCoordinates(0, 0, -1);
+		menuContainer.setDimensions(10, 7);
+		hudObjects.add(menuContainer);
+		Collections.addAll(menuContainer.getObjects(), menuObjects);
 		
 		// initialize the camera
 		cameraAngle[0] = cameraAngle[1] = 0;
@@ -269,11 +333,35 @@ public class GameScene implements View {
 	@Override
 	public void draw() {
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 		
 		updateCamera();
 		
 		// draw the objects
 		objects.drawAll();
+		
+		GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+		
+		// update some HUD objects
+		((HUDText)hudObjectsTemplate[0][0]).setCaption("Score: " + game.getScore());
+		
+		for (HUDObject hudObject: hudObjects) 
+			hudObject.setVisibility(false);
+		
+		if (game.getStatus() == Game.GameStatus.RUNNING) {
+			for (HUDObject hudObject: hudObjects.getObjectsByTag("ingame_hud")) {
+				hudObject.setVisibility(true);
+			}
+			
+		} else {
+			for (HUDObject hudObject: hudObjects.getObjectsByTag("paused_menu")) {
+				hudObject.setVisibility(true);
+			}
+			for (HUDObject hudObject: hudObjects.getObjectsByTag("paused_menu_overlay")) {
+				hudObject.setVisibility(true);
+			}
+		}
+		
 		hudObjects.drawAll();
 	}
 	
@@ -300,6 +388,21 @@ public class GameScene implements View {
 			//		-ratio, ratio, -1f, 1f, 2f, 100f );
 			Matrix.perspectiveM(camera.getProjectionMatrix(), 0, 60, ratio, 0.001f, 100f);
 			
+			// realign hud objects
+			for (Object[] objProps: hudObjectsTemplate) {
+				HUDObject hudObject = (HUDObject)objProps[0];
+				if (objProps.length > 1) {
+					float[] position = (float[]) objProps[1];
+					hudObject.position().setCoordinates(position[0], position[1], position[2]);
+					if (position[0] < 0)
+						hudObject.position().setX(vWidth + position[0]);
+				}
+				
+				hudObject.updateBoundingBox();
+			}
+			menuContainer.setDimensions(vWidth, menuContainer.getDimensions()[1]);
+			menuContainer.repositionObjects();
+			
 			updateCamera();
 		}
 	}
@@ -314,13 +417,23 @@ public class GameScene implements View {
 			HUDObject target = null;
 			synchronized (lock) {
 				// convert viewport to world coordinates
-				float[] objCoords = camera.unProjectCoordinates(e.getX(), e.getY());
+				float[] objCoords = hudCamera.unProjectCoordinates(e.getX(), e.getY());
 				
 				if (objCoords != null) {
+					
 					// identify the target object
-					for (HUDObject hudObject : hudObjects) {
-						if (hudObject.getBoundingBox().contains(objCoords[0], objCoords[1])) {
-							target = hudObject;
+					if (menuContainer.isVisible()) {
+						for (HUDObject hudObject : menuContainer.getObjects()) {
+							if (hudObject.getBoundingBox().contains(objCoords[0], objCoords[1])) {
+								target = hudObject;
+							}
+						}
+						
+					} else {
+						for (HUDObject hudObject : hudObjects) {
+							if (hudObject.isVisible() && hudObject.getBoundingBox().contains(objCoords[0], objCoords[1])) {
+								target = hudObject;
+							}
 						}
 					}
 					
@@ -336,6 +449,9 @@ public class GameScene implements View {
 			}
 			
 			if (target == null) {
+				if (game.getStatus() != Game.GameStatus.RUNNING)
+					return true;
+				
 				// move the camera
 				if (e.getAction() == MotionEvent.ACTION_DOWN) {
 					initialTouchPoint[0] = e.getX();

@@ -49,8 +49,17 @@ public class MenuContainer extends CenteredContainer {
 	
 	@Override
 	public void draw() {
+		if (!visibility) return;
+		
 		// draw all children objects
 		objects.drawAll();
+	}
+	
+	@Override
+	public void destroy() {
+		for (HUDObject object: objects) {
+			object.destroy();
+		}
 	}
 	
 }

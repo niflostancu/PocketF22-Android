@@ -33,6 +33,10 @@ public abstract class HUDObject extends AbstractObject3D {
 	 */
 	protected BoundingBox2D boundingBox;
 	
+	/**
+	 * Whether the object is visible or not.
+	 */
+	protected boolean visibility;
 	
 	/**
 	 * The constructor with mandatory parameters.
@@ -45,6 +49,7 @@ public abstract class HUDObject extends AbstractObject3D {
 		super(scene, tag, priority);
 		this.position = new Point3D();
 		this.boundingBox = new BoundingBox2D(0, 0, 0, 0);
+		visibility = true;
 	}
 	
 	// receive UI events
@@ -92,6 +97,24 @@ public abstract class HUDObject extends AbstractObject3D {
 		this.width = width;
 		this.height = height;
 		updateBoundingBox();
+	}
+	
+	/**
+	 * Returns whether the object is visible.
+	 * 
+	 * @return Object's visibility.
+	 */
+	public boolean isVisible() {
+		return visibility;
+	}
+	
+	/**
+	 * Changes the object's visibility.
+	 * 
+	 * @param visibility The visibility to set.
+	 */
+	public void setVisibility(boolean visibility) {
+		this.visibility = visibility;
 	}
 	
 	/**

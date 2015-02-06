@@ -103,7 +103,7 @@ public class Game implements Serializable {
 	 * 
 	 * <p>The instance parameters can't be changed once the game is running!</p>
 	 */
-	public void start() {
+	public synchronized void start() {
 		if (status == GameStatus.RUNNING)
 			return;
 		

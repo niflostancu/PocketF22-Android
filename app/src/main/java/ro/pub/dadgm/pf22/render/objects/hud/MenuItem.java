@@ -48,7 +48,7 @@ public class MenuItem extends HUDObject {
 	
 	
 	/**
-	 * Initializes the menu background object.
+	 * Initializes the menu item object.
 	 * 
 	 * @param scene The parent scene object.
 	 * @param tag An optional tag.
@@ -70,6 +70,8 @@ public class MenuItem extends HUDObject {
 	
 	@Override
 	public void draw() {
+		if (!visibility) return;
+		
 		prepareDrawText();
 		
 		synchronized (this) { // hover is set from the Activity thread
@@ -85,6 +87,8 @@ public class MenuItem extends HUDObject {
 	
 	@Override
 	public boolean onTouchEvent(@NonNull MotionEvent e) {
+		if (clickListener == null) return false;
+		
 		if (e.getAction() == MotionEvent.ACTION_HOVER_ENTER || 
 				e.getAction() == MotionEvent.ACTION_HOVER_MOVE) {
 			synchronized (this) {

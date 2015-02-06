@@ -90,21 +90,20 @@ public class PhysicsThread extends Thread {
 		while (!Thread.currentThread().interrupted()) {
 			int td;
 			
-			synchronized (this) {
-				if (paused) {
-					try {
-						Thread.sleep(PHYSICS_SIMULATION_PERIOD);
-
-					} catch (InterruptedException e) {
-						// nothing
-					}
-					continue;
+			if (paused) {
+				try {
+					Thread.sleep(PHYSICS_SIMULATION_PERIOD);
+					
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					break;
 				}
-				// calculate the time difference
-				long now = System.nanoTime();
-				td = (int) ((now - lastTime) / 1000000l);
-				lastTime = now;
+				continue;
 			}
+			// calculate the time difference
+			long now = System.nanoTime();
+			td = (int) ((now - lastTime) / 1000000l);
+			lastTime = now;
 			
 			// first, simulate the movement equations
 			MobileObject[] mobileObjectsSnapshot = mobileObjects.toArray(new MobileObject[mobileObjects.size()]);
@@ -131,6 +130,7 @@ public class PhysicsThread extends Thread {
 				
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
+				break;
 			}
 		}
 	}
@@ -141,20 +141,16 @@ public class PhysicsThread extends Thread {
 	 * <p>Can be resumed with {@link #resumeProcessing}</p>
 	 */
 	public void pauseProcessing() {
-		synchronized (this) {
-			paused = true;
-			pausedTimeElapsed = System.nanoTime() - lastTime;
-		}
+		paused = true;
+		pausedTimeElapsed = System.nanoTime() - lastTime;
 	}
 	
 	/**
 	 * Resumes the Physics processing.
 	 */
 	public void resumeProcessing() {
-		synchronized (this) {
-			paused = false;
-			lastTime = System.nanoTime() - pausedTimeElapsed;
-		}
+		paused = false;
+		lastTime = System.nanoTime() - pausedTimeElapsed;
 	}
 	
 	/**

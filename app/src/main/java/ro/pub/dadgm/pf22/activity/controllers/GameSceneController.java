@@ -29,28 +29,62 @@ public class GameSceneController implements Controller {
 	 */
 	protected final HashMap<String, View.OnClickListener> actions;
 	
+	/**
+	 * The game object.
+	 */
+	protected final Game game;
 	
 	/**
 	 * Controller object constructor.
 	 */
-	public GameSceneController(MainActivity mainActivity) {
+	public GameSceneController(final MainActivity mainActivity) {
 		this.mainActivity = mainActivity;
 		this.view = new GameScene(this);
+		this.game = mainActivity.getGame();
 		
 		actions = new HashMap<>();
 		
 		// populate the actions
-		actions.put("pause_game", new View.OnClickListener() {
+		actions.put("hud_pause", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				game.pause();
+			}
+		});
+		
+		actions.put("hud_shoot_missile", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				// TODO
 			}
 		});
 		
-		actions.put("exit_game", new View.OnClickListener() {
+		actions.put("hud_shoot_gun", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				// TODO
+			}
+		});
+		
+		actions.put("menu_resume", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				game.start(); // resume game
+			}
+		});
+
+		actions.put("menu_calibrate", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO
+			}
+		});
+
+		actions.put("menu_exit", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				game.stop();
+				mainActivity.getController("main_menu").activate();
 			}
 		});
 		
@@ -87,7 +121,7 @@ public class GameSceneController implements Controller {
 	 * @return Reference to the Game model object.
 	 */
 	public Game getGame() {
-		return mainActivity.getGame();
+		return game;
 	}
 	
 }

@@ -110,13 +110,13 @@ public class ObjectsManager<O3D extends Object3D> extends AbstractCollection<O3D
 	 * 
 	 * <p>Must support the null key! (HashMap does that)</p>
 	 */
-	protected final Map<String, ObjectsCollection> objectsMap;
-
+	protected Map<String, ObjectsCollection> objectsMap;
+	
 	/**
 	 * An internal map that retains the objects grouped by priority.
 	 */
-	protected final Map<Integer, Collection<O3D>> priorityMap;
-
+	protected Map<Integer, Collection<O3D>> priorityMap;
+	
 	/**
 	 * Cached collection size.
 	 */
@@ -245,6 +245,12 @@ public class ObjectsManager<O3D extends Object3D> extends AbstractCollection<O3D
 				ObjectsManager.this.remove(current);
 			}
 		};
+	}
+	
+	@Override
+	public void clear() {
+		objectsMap = new HashMap<>();
+		priorityMap = new TreeMap<>();
 	}
 	
 	@Override
