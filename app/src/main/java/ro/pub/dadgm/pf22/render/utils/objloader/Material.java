@@ -70,7 +70,8 @@ public class Material {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
+	
 	/**
 	 * Loads/returns the cached texture for the current material.
 	 * 
@@ -81,16 +82,14 @@ public class Material {
 		if (textureFile == null || textureFile.isEmpty())
 			return -1;
 		
-		if (glTexture == 0) {
-			glTexture = TextureLoader.loadTextureFromAsset(rootPath + textureFile);
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-			GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
-		}
-		
+		glTexture = TextureLoader.loadTextureFromAsset(rootPath + textureFile);
 		if (glTexture == 0)
 			throw new RuntimeException("Unable to load the texture file '" + textureFile + "'!");
+		
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
 		
 		return glTexture;
 	}

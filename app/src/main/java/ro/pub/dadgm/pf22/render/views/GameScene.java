@@ -168,9 +168,9 @@ public class GameScene implements View {
 	protected Object[][] hudObjectsTemplate;
 	
 	/**
-	 * Reference to the menu container object.
+	 * Reference to the menu container objects.
 	 */
-	protected MenuContainer menuContainer;
+	protected MenuContainer menuContainer, gameOverContainer;
 	
 	/**
 	 * Lock used for Activity/Renderer threads synchronization.
@@ -275,14 +275,25 @@ public class GameScene implements View {
 				{ new HUDButton(gameHUD, "ingame_hud", 0, "R", controller.getAction("hud_shoot_missile") ), new float[]{ 0.4f, 0.4f, 0f } },
 				{ new HUDButton(gameHUD, "ingame_hud", 0, "G", controller.getAction("hud_shoot_gun") ), new float[]{ -1.1f, 0.4f, 0f } },
 				
+				{ new HUDButton(gameHUD, "ingame_hud", 0, "<", controller.getAction("hud_steer_left") ), new float[]{ 0.4f, 1.4f, 0f } },
+				{ new HUDButton(gameHUD, "ingame_hud", 0, ">", controller.getAction("hud_steer_right") ), new float[]{ -1.1f, 1.4f, 0f } },
+				{ new HUDButton(gameHUD, "ingame_hud", 0, "U", controller.getAction("hud_pitch_up") ), new float[]{ 2.4f, 0.4f, 0f } },
+				{ new HUDButton(gameHUD, "ingame_hud", 0, "D", controller.getAction("hud_pitch_down") ), new float[]{ 3.4f, 0.4f, 0f } },
+				
 				{ new HUDButton(gameHUD, "ingame_hud", 0, "M", controller.getAction("hud_pause") ), new float[]{ 0.4f, 9.1f, 0f } },
 				
-				{ new MenuOverlay(gameHUD, "paused_menu_overlay", -10 ), new float[]{ 0, 0, 0f }, new float[] { 10f, 10f } },
+				{ new MenuOverlay(gameHUD, "paused_menu", -10 ), new float[]{ 0, 0, 0f }, new float[] { 10f, 10f } },
+				{ new MenuOverlay(gameHUD, "gameover", -10 ), new float[]{ 0, 0, 0f }, new float[] { 10f, 10f } }
 		};
 		MenuItem[] menuObjects = new MenuItem[]{
 				// uses the priority to establish the order of the items
 				new MenuItem(gameHUD, "menu_item", 0, "Resume", controller.getAction("menu_resume")),
 				new MenuItem(gameHUD, "menu_item", 1, "Calibrate", controller.getAction("menu_calibrate")),
+				new MenuItem(gameHUD, "menu_item", 2, "Exit", controller.getAction("menu_exit")),
+		};
+		HUDObject[] gameOverObjects = new HUDObject[]{
+				// uses the priority to establish the order of the items
+				new HUDText(gameHUD, "menu_item", 0, "Game Over"), 
 				new MenuItem(gameHUD, "menu_item", 2, "Exit", controller.getAction("menu_exit")),
 		};
 		
@@ -306,6 +317,12 @@ public class GameScene implements View {
 		menuContainer.setDimensions(10, 7);
 		hudObjects.add(menuContainer);
 		Collections.addAll(menuContainer.getObjects(), menuObjects);
+		
+		gameOverContainer = new MenuContainer(gameHUD, "gameover", 0);
+		gameOverContainer.position().setCoordinates(0, 0, -1);
+		gameOverContainer.setDimensions(10, 7);
+		hudObjects.add(gameOverContainer);
+		Collections.addAll(gameOverContainer.getObjects(), gameOverObjects);
 		
 		// initialize the camera
 		cameraAngle[0] = cameraAngle[1] = 0;
@@ -353,11 +370,13 @@ public class GameScene implements View {
 				hudObject.setVisibility(true);
 			}
 			
-		} else {
+		} else if (game.getStatus() == Game.GameStatus.PAUSED) {
 			for (HUDObject hudObject: hudObjects.getObjectsByTag("paused_menu")) {
 				hudObject.setVisibility(true);
 			}
-			for (HUDObject hudObject: hudObjects.getObjectsByTag("paused_menu_overlay")) {
+			
+		} else {
+			for (HUDObject hudObject: hudObjects.getObjectsByTag("gameover")) {
 				hudObject.setVisibility(true);
 			}
 		}
@@ -402,6 +421,8 @@ public class GameScene implements View {
 			}
 			menuContainer.setDimensions(vWidth, menuContainer.getDimensions()[1]);
 			menuContainer.repositionObjects();
+			gameOverContainer.setDimensions(vWidth, gameOverContainer.getDimensions()[1]);
+			gameOverContainer.repositionObjects();
 			
 			updateCamera();
 		}
@@ -424,6 +445,13 @@ public class GameScene implements View {
 					// identify the target object
 					if (menuContainer.isVisible()) {
 						for (HUDObject hudObject : menuContainer.getObjects()) {
+							if (hudObject.getBoundingBox().contains(objCoords[0], objCoords[1])) {
+								target = hudObject;
+							}
+						}
+						
+					} else if (gameOverContainer.isVisible()) {
+						for (HUDObject hudObject : gameOverContainer.getObjects()) {
 							if (hudObject.getBoundingBox().contains(objCoords[0], objCoords[1])) {
 								target = hudObject;
 							}

@@ -73,6 +73,11 @@ public class Game implements Serializable {
 	 */
 	protected transient PhysicsThread physicsThread;
 	
+	/**
+	 * The thread for smooth controlling the planes.
+	 */
+	protected transient SmoothControlThread smoothControl;
+	
 	
 	/**
 	 * Game constructor.
@@ -113,10 +118,16 @@ public class Game implements Serializable {
 			// unsleep the threads and continue
 			if (physicsThread.isAlive()) {
 				physicsThread.resumeProcessing();
-				
 			} else {
 				// cold start
 				physicsThread.start();
+			}
+			
+			if (smoothControl.isAlive()) {
+				smoothControl.resumeProcessing();
+			} else {
+				// cold start
+				smoothControl.start();
 			}
 			
 			status = GameStatus.RUNNING;
@@ -143,6 +154,7 @@ public class Game implements Serializable {
 		
 		// the game is on!
 		physicsThread.start();
+		smoothControl.start();
 		
 		status = GameStatus.RUNNING;
 	}
@@ -154,6 +166,9 @@ public class Game implements Serializable {
 		// initialize the Physics module
 		if (physicsThread == null)
 			physicsThread = new PhysicsThread(world.getMobileObjects(), world.getCollidableObjects(), new PhysicsListener());
+		
+		if (smoothControl == null)
+			smoothControl = new SmoothControlThread();
 		
 		// TODO: initialize the AI module
 	}
@@ -167,15 +182,18 @@ public class Game implements Serializable {
 		
 		// stop the threads
 		physicsThread.interrupt();
+		smoothControl.interrupt();
 		
 		try {
 			physicsThread.join();
+			smoothControl.join();
 			
 		} catch (InterruptedException e) {
 			Log.e(Game.class.getSimpleName(), "Thread interrupted!", e);
 		}
 		
 		physicsThread = null;
+		smoothControl = null;
 		world = null;
 		
 		status = GameStatus.STOPPED;
@@ -189,6 +207,7 @@ public class Game implements Serializable {
 			return;
 		
 		physicsThread.pauseProcessing();
+		smoothControl.pauseProcessing();
 		
 		status = GameStatus.PAUSED;
 	}
@@ -272,6 +291,17 @@ public class Game implements Serializable {
 	public World getWorld() {
 		return world;
 	}
+	
+	/**
+	 * Queues the specified plane control command.
+	 *
+	 * @param plane The target plane.
+	 * @param parameters The control parameters.
+	 */
+	public void queuePlaneCommand(Plane plane, SmoothControlThread.PlaneControlParameters parameters) {
+		smoothControl.queueCommand(plane, parameters);
+	}
+	
 	
 	/**
 	 * Destroys the specified plane object.

@@ -2,6 +2,10 @@ package ro.pub.dadgm.pf22.activity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -10,7 +14,9 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ro.pub.dadgm.pf22.R;
@@ -41,6 +47,21 @@ public class MainActivity extends Activity {
 	 */
 	private Game game;
 	
+	/**
+	 * Stores the list of currently registered sensor listeners.
+	 */
+	private List<SensorEventListener> sensorListeners = new ArrayList<>();
+	
+	/**
+	 * Stores the system's sensor manager object.
+	 */
+	private SensorManager sensorManager;
+	
+	/**
+	 * Stores the gravity sensor instance.
+	 */
+	private Sensor gravitySensor;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +85,9 @@ public class MainActivity extends Activity {
 		
 		game.injectActivity(this);
 		
+		// initialize sensors
+		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		
 		// build the controller objects
 		MainMenuController mainMenu = new MainMenuController(this);
@@ -97,6 +121,10 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
+		for (SensorEventListener listener: sensorListeners) {
+			sensorManager.unregisterListener(listener);
+		}
+		
 		Log.d(MainActivity.class.getSimpleName(), "Activity paused.");
 		surfaceView.onPause();
 	}
@@ -112,6 +140,11 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		
+		for (SensorEventListener listener: sensorListeners) {
+			sensorManager.registerListener(listener, gravitySensor, SensorManager.SENSOR_DELAY_GAME);
+		}
+		
 		Log.d(MainActivity.class.getSimpleName(), "Activity resumed.");
 		surfaceView.onResume();
 	}
@@ -135,6 +168,13 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	/**
+	 * Registers a sensor listener for the gravity events.
+	 */
+	public void registerGravitySensorListener(SensorEventListener listener) {
+		sensorListeners.add(listener);
+		sensorManager.registerListener(listener, gravitySensor, SensorManager.SENSOR_DELAY_NORMAL);
+	}
 	
 	/**
 	 * Returns the SurfaceView reference.

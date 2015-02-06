@@ -154,6 +154,18 @@ public class Plane extends BaseMobileModel {
 	}
 	
 	/**
+	 * Sets the plane's roll as absolute value.
+	 *
+	 * @param angle The angle to set as roll.
+	 */
+	@SuppressWarnings("unused")
+	public synchronized void setRoll(float angle) {
+		if (angle > 90) angle = 90;
+		if (angle < -90) angle = -90;
+		this.roll = angle;
+	}
+	
+	/**
 	 * Returns plane's yaw.
 	 * 
 	 * @return Plane's current yaw.

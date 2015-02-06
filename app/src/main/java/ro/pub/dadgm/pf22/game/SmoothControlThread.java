@@ -1,6 +1,8 @@
 package ro.pub.dadgm.pf22.game;
 
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 import ro.pub.dadgm.pf22.game.models.Plane;
@@ -120,9 +122,11 @@ public class SmoothControlThread extends Thread {
 			
 			// make the steps
 			synchronized (planeCommands) {
+				List<Plane> cleanUpItems = new ArrayList<>(); 
 				for (Map.Entry<Plane, PlaneControlParameters> entry: planeCommands.entrySet()) {
 					Plane plane = entry.getKey();
 					PlaneControlParameters parameters = entry.getValue();
+					boolean cleanup = true;
 					
 					if (parameters.yaw > 0.0001 || parameters.yaw < -0.0001) {
 						float diff = Math.signum(parameters.yaw) * td * PLANE_YAW_DELTA;
@@ -132,6 +136,7 @@ public class SmoothControlThread extends Thread {
 						parameters.yaw -= diff;
 						// use roll for pretty animation
 						plane.setRoll(parameters.yaw * -2);
+						cleanup = false;
 					}
 					if (parameters.pitch > 0.0001 || parameters.pitch < -0.0001) {
 						float diff = Math.signum(parameters.pitch) * td * PLANE_PITCH_DELTA;
@@ -139,8 +144,15 @@ public class SmoothControlThread extends Thread {
 							diff = parameters.pitch;
 						plane.pitch(diff);
 						parameters.pitch -= diff;
+						cleanup = false;
 					}
+					
+					if (cleanup)
+						cleanUpItems.add(plane);
 				}
+				
+				for (Plane plane: cleanUpItems)
+					planeCommands.remove(plane);
 			}
 			
 			// wait and repeat

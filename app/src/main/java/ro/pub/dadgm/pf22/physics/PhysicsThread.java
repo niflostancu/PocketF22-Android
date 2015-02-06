@@ -24,7 +24,7 @@ public class PhysicsThread extends Thread {
 	/**
 	 * The simulation period, in milliseconds. 
 	 */
-	public final int PHYSICS_SIMULATION_PERIOD = 100; // milliseconds
+	public final int PHYSICS_SIMULATION_PERIOD = 50; // milliseconds
 	
 	
 	/**
@@ -87,7 +87,7 @@ public class PhysicsThread extends Thread {
 		lastTime = System.nanoTime();
 		
 		// simulation loop
-		while (!Thread.currentThread().interrupted()) {
+		while (!isInterrupted()) {
 			int td;
 			
 			if (paused) {

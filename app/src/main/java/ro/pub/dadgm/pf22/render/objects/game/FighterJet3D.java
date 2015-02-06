@@ -25,12 +25,12 @@ public class FighterJet3D extends AbstractObject3D {
 	/**
 	 * The asset path of the model's resources.
 	 */
-	protected final String MODEL_PATH = "objects/f22_raptor/"; 
+	protected final static String MODEL_PATH = "objects/f22_raptor/";
 	
 	/**
 	 * The fighter jet's model object.
 	 */
-	protected TDModel modelObj;
+	protected static TDModel modelObj = null;
 	
 	/**
 	 * The plane model object.
@@ -62,8 +62,8 @@ public class FighterJet3D extends AbstractObject3D {
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to read fighter jet model file!", e);
 		}
-		
-		modelObj = parser.parseOBJ(modelStream, materialStream);
+		if (modelObj == null)
+			modelObj = parser.parseOBJ(modelStream, materialStream);
 	}
 	
 	@Override
@@ -73,8 +73,8 @@ public class FighterJet3D extends AbstractObject3D {
 		Matrix.setIdentityM(modelMatrix, 0);
 		Matrix.translateM(modelMatrix, 0, position[0], position[1], position[2]);
 		Matrix.scaleM(modelMatrix, 0, 1/19000f, 1/19000f, 1/19000f);
-		Matrix.rotateM(modelMatrix, 0, plane.getPitch(), 1, 0, 0);
 		Matrix.rotateM(modelMatrix, 0, plane.getYaw(), 0, 0, 1);
+		Matrix.rotateM(modelMatrix, 0, -plane.getPitch(), 0, 1, 0);
 		Matrix.rotateM(modelMatrix, 0, plane.getRoll(), 1, 0, 0);
 		Matrix.rotateM(modelMatrix, 0, -90, 0, 0, 1);
 		

@@ -1,5 +1,8 @@
 package ro.pub.dadgm.pf22.activity.controllers;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.view.View;
 
 import java.util.HashMap;
@@ -7,6 +10,7 @@ import java.util.HashMap;
 import ro.pub.dadgm.pf22.activity.Controller;
 import ro.pub.dadgm.pf22.activity.MainActivity;
 import ro.pub.dadgm.pf22.game.Game;
+import ro.pub.dadgm.pf22.game.SmoothControlThread;
 import ro.pub.dadgm.pf22.render.views.GameScene;
 
 /**
@@ -52,6 +56,31 @@ public class GameSceneController implements Controller {
 			}
 		});
 		
+		actions.put("hud_steer_left", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(20, 0));
+			}
+		});
+		actions.put("hud_steer_right", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(-20, 0));
+			}
+		});
+		actions.put("hud_pitch_up", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(0, 5));
+			}
+		});
+		actions.put("hud_pitch_down", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				game.queuePlaneCommand(game.getWorld().getPlayer(), new SmoothControlThread.PlaneControlParameters(0, -5));
+			}
+		});
+		
 		actions.put("hud_shoot_missile", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -87,7 +116,25 @@ public class GameSceneController implements Controller {
 				mainActivity.getController("main_menu").activate();
 			}
 		});
+
+		mainActivity.registerGravitySensorListener(new GravityListener());
+	}
+	
+	/**
+	 * The gravity (accelerometer-based) events listener.
+	 */
+	protected class GravityListener implements SensorEventListener {
 		
+		@Override
+		public void onSensorChanged(SensorEvent event) {
+			//Log.d(GameSceneController.class.getSimpleName(), "Sensor event: " + 
+			//		event.values[0] + ", " + event.values[1] + ", " + event.values[2] );
+		}
+		
+		@Override
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {
+			// nothing to do
+		}
 	}
 	
 	@Override
