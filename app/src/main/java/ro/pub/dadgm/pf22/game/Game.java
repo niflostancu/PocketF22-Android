@@ -82,6 +82,8 @@ public class Game implements Serializable {
 	public Game() {
 		status = GameStatus.STOPPED;
 		sound = true;
+		
+		difficulty = Difficulty.EASY;
 	}
 	
 	

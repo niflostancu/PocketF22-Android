@@ -9,6 +9,7 @@ import java.util.Collections;
 
 import ro.pub.dadgm.pf22.R;
 import ro.pub.dadgm.pf22.activity.controllers.MainMenuController;
+import ro.pub.dadgm.pf22.game.Game;
 import ro.pub.dadgm.pf22.render.Camera;
 import ro.pub.dadgm.pf22.render.Scene3D;
 import ro.pub.dadgm.pf22.render.ShaderManager;
@@ -86,6 +87,16 @@ public class MainMenu implements View, Scene3D {
 	 */
 	protected final Object lock = new Object();
 	
+	/**
+	 * The indexed list of menu items (for quick access).
+	 */
+	protected MenuItem[] menuObjects;
+	
+	/**
+	 * Reference to the menu container object.
+	 */
+	protected MenuContainer menuContainer;
+	
 	
 	/**
 	 * Constructs the main menu of the game.
@@ -139,7 +150,7 @@ public class MainMenu implements View, Scene3D {
 		centeredContainer.setDimensions(10, 10);
 		objects.add(centeredContainer);
 		
-		MenuContainer menuContainer = new MenuContainer(this, "fullsize", -3);
+		menuContainer = new MenuContainer(this, "fullsize", -3);
 		menuContainer.position().setCoordinates(0, 0, -1);
 		menuContainer.setDimensions(10, 7);
 		objects.add(menuContainer);
@@ -149,7 +160,7 @@ public class MainMenu implements View, Scene3D {
 				// { object, position, size }
 				{ new MenuTitle(this, "text", 3), new float[]{ 0f, 9.5f, 5f }, new float[]{ 0, 1 } }, 
 		};
-		final HUDObject[] menuObjects = new HUDObject[]{
+		menuObjects = new MenuItem[]{
 				// uses the priority to establish the order of the items
 				new MenuItem(this, "menu_item", 0, "Start Game", controller.getAction("start_game")),
 				new MenuItem(this, "menu_item", 1, "Sound", controller.getAction("toggle_sound")),
@@ -191,6 +202,13 @@ public class MainMenu implements View, Scene3D {
 	@Override
 	public void draw() {
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+		
+		Game game = controller.getGame();
+		
+		// update menu captions
+		menuObjects[1].setCaption("Sound: " + ( game.getSound() ? "on" : "off"));
+		menuObjects[2].setCaption("Difficulty: " + game.getDifficulty().toString().toLowerCase());
+		menuContainer.repositionObjects();
 		
 		// draw the objects
 		objects.drawAll();
