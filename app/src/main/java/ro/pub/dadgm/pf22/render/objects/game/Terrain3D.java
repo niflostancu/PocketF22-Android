@@ -127,8 +127,8 @@ public class Terrain3D extends AbstractObject3D {
 				if (texture == 0)
 					throw new RuntimeException("Unable to load texture file '" + textureFile + "'!");
 				
-				// GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+				GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST_MIPMAP_LINEAR);
 				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
 				GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
@@ -218,10 +218,11 @@ public class Terrain3D extends AbstractObject3D {
 					parcel.addTriangle(v, v3, v4);
 					
 					// compute texture coordinates for the triangle's vertices
-					parcel.addTextureCoordinate(v, 0f, 0f);
-					parcel.addTextureCoordinate(v2, 0f, 1f);
-					parcel.addTextureCoordinate(v3, 1f, 1f);
-					parcel.addTextureCoordinate(v4, 1f, 0f);
+					final float texScale = 1/3f;
+					parcel.addTextureCoordinate(v, j*texScale, i*texScale);
+					parcel.addTextureCoordinate(v2, j*texScale, (i+1f)*texScale);
+					parcel.addTextureCoordinate(v3, (j+1f)*texScale, (i+1f)*texScale);
+					parcel.addTextureCoordinate(v4, (j+1f)*texScale, i*texScale);
 				}
 			}
 		}
@@ -360,14 +361,14 @@ public class Terrain3D extends AbstractObject3D {
 			if (parcel == null) continue;
 			
 			if (parcel.texture > 0) {
-				GLES20.glEnableVertexAttribArray(a_textureCoords);
-				GLES20.glVertexAttribPointer(a_textureCoords, 2, GLES20.GL_FLOAT, false,
-						0, parcel.textureCoordsBuf);
-				
 				GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 				GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, parcel.texture);
 				GLES20.glUniform1i(u_texture, 0);
 				GLES20.glUniform1i(u_textureEnable, 1);
+				
+				GLES20.glVertexAttribPointer(a_textureCoords, 2, GLES20.GL_FLOAT, false,
+						0, parcel.textureCoordsBuf);
+				GLES20.glEnableVertexAttribArray(a_textureCoords);
 				
 			} else {
 				// disable texture
