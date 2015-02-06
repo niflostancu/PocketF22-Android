@@ -291,56 +291,64 @@ public class GameScene implements View {
 		
 		world.addEnemyCollectionListener(new CollectionListener<EnemyPlane>() {
 			@Override
-			public void onObjectAdded(EnemyPlane object) {
-				synchronized (modelObjects) {
-					FighterJet3D planeObject = new FighterJet3D(gameScene3D, object, "enemy_fighter", 0);
-					objects.add(planeObject);
-					modelObjects.put(object, planeObject);
-				}
+			public void onObjectAdded(final EnemyPlane object) {
+				controller.queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						FighterJet3D planeObject = new FighterJet3D(gameScene3D, object, "enemy_fighter", 0);
+						objects.add(planeObject);
+						modelObjects.put(object, planeObject);
+					}
+				});
 			}
 			@Override
-			public void onObjectRemoved(EnemyPlane object) {
-				synchronized (modelObjects) {
-					if (!modelObjects.containsKey(object))
-						return;
-					objects.remove(modelObjects.get(object));
-					modelObjects.remove(object);
-				}
+			public void onObjectRemoved(final EnemyPlane object) {
+				controller.queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						if (!modelObjects.containsKey(object))
+							return;
+						objects.remove(modelObjects.get(object));
+						modelObjects.remove(object);
+					}
+				});
 			}
 		});
-		synchronized (modelObjects) {
-			for (EnemyPlane plane : world.getEnemyPlanes()) {
-				FighterJet3D planeObject = new FighterJet3D(gameScene3D, plane, "enemy_fighter", 0);
-				objects.add(planeObject);
-				modelObjects.put(plane, planeObject);
-			}
+		for (EnemyPlane plane : world.getEnemyPlanes()) {
+			FighterJet3D planeObject = new FighterJet3D(gameScene3D, plane, "enemy_fighter", 0);
+			objects.add(planeObject);
+			modelObjects.put(plane, planeObject);
 		}
 		
 		world.addProjectileCollectionListener(new CollectionListener<Projectile>() {
 			@Override
-			public void onObjectAdded(Projectile object) {
-				synchronized (modelObjects) {
-					RocketProjectile3D planeObject = new RocketProjectile3D(gameScene3D, object, "projectile", 0);
-					objects.add(planeObject);
-					modelObjects.put(object, planeObject);
-				}
+			public void onObjectAdded(final Projectile object) {
+				controller.queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						RocketProjectile3D planeObject = new RocketProjectile3D(gameScene3D, object, "projectile", 0);
+						objects.add(planeObject);
+						modelObjects.put(object, planeObject);
+					}
+				});
 			}
 			@Override
-			public void onObjectRemoved(Projectile object) {
-				synchronized (modelObjects) {
-					if (!modelObjects.containsKey(object))
-						return;
-					objects.remove(modelObjects.get(object));
-					modelObjects.remove(object);
-				}
+			public void onObjectRemoved(final Projectile object) {
+				controller.queueEvent(new Runnable() {
+					@Override
+					public void run() {
+						if (!modelObjects.containsKey(object))
+							return;
+						objects.remove(modelObjects.get(object));
+						modelObjects.remove(object);
+					}
+				});
 			}
 		});
-		synchronized (modelObjects) {
-			for (Projectile projectile : world.getProjectiles()) {
-				RocketProjectile3D projectileObject = new RocketProjectile3D(gameScene3D, projectile, "projectile", 0);
-				objects.add(projectileObject);
-				modelObjects.put(projectile, projectileObject);
-			}
+		for (Projectile projectile : world.getProjectiles()) {
+			RocketProjectile3D projectileObject = new RocketProjectile3D(gameScene3D, projectile, "projectile", 0);
+			objects.add(projectileObject);
+			modelObjects.put(projectile, projectileObject);
 		}
 		
 		

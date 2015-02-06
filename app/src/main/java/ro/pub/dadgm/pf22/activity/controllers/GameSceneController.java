@@ -11,6 +11,7 @@ import ro.pub.dadgm.pf22.activity.Controller;
 import ro.pub.dadgm.pf22.activity.MainActivity;
 import ro.pub.dadgm.pf22.game.Game;
 import ro.pub.dadgm.pf22.game.SmoothControlThread;
+import ro.pub.dadgm.pf22.game.models.Projectile;
 import ro.pub.dadgm.pf22.render.views.GameScene;
 
 /**
@@ -84,7 +85,7 @@ public class GameSceneController implements Controller {
 		actions.put("hud_shoot_missile", new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO
+				game.shootProjectile(game.getWorld().getPlayer(), Projectile.ProjectileType.PROJECTILE_ROCKET);
 			}
 		});
 		

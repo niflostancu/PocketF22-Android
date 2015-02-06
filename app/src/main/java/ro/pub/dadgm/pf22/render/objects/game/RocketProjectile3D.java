@@ -60,10 +60,12 @@ public class RocketProjectile3D extends AbstractObject3D {
 			// materialStream = MainActivity.getAppContext().getAssets().open(MODEL_PATH + "materials.mtl");
 			
 		} catch (IOException e) {
-			throw new RuntimeException("Unable to read fighter rocket model file!", e);
+			throw new RuntimeException("Unable to read rocket model file!", e);
 		}
 		if (modelObj == null)
 			modelObj = parser.parseOBJ(modelStream, null);
+		
+		modelObj.initializeBuffers();
 	}
 	
 	@Override
@@ -72,8 +74,10 @@ public class RocketProjectile3D extends AbstractObject3D {
 		
 		Matrix.setIdentityM(modelMatrix, 0);
 		Matrix.translateM(modelMatrix, 0, position[0], position[1], position[2]);
-		Matrix.scaleM(modelMatrix, 0, 1 / 100000f, 1 / 100000f, 1 / 100000f);
-		// Matrix.rotateM(modelMatrix, 0, -90, 0, 0, 1);
+		Matrix.scaleM(modelMatrix, 0, 1 / 10f, 1 / 10f, 1 / 10f);
+		Matrix.rotateM(modelMatrix, 0, projectile.getYaw(), 0, 0, 1);
+		Matrix.rotateM(modelMatrix, 0, projectile.getPitch(), 0, 1, 0);
+		Matrix.rotateM(modelMatrix, 0, -90, 0, 0, 1);
 		
 		float[] lightPosition = GameScene.LIGHT_POSITION;
 		float[] normalMatrix = scene.getCamera().computeNormalMatrix(modelMatrix);
@@ -120,9 +124,9 @@ public class RocketProjectile3D extends AbstractObject3D {
 		for (TDModelPart part: modelObj.getParts()) {
 			// load the texture
 			Material mat = new Material("rocket");
-			mat.setAmbientColor(0.3f, 0.3f, 0.3f);
-			mat.setDiffuseColor(1, 1, 1);
-			mat.setSpecularColor(0.7f, 0.7f, 0.7f);
+			mat.setAmbientColor(0.5f, 0.3f, 0.05f);
+			mat.setDiffuseColor(1.0f, 0.4f, 0.1f);
+			mat.setSpecularColor(0.9f, 0.4f, 0.05f);
 			
 			int texture = mat.loadTexture(MODEL_PATH);
 			

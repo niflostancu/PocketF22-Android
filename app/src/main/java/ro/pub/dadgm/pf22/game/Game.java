@@ -11,6 +11,7 @@ import ro.pub.dadgm.pf22.physics.CollisionObject;
 import ro.pub.dadgm.pf22.physics.MobileObject;
 import ro.pub.dadgm.pf22.physics.PhysicsSimulationListener;
 import ro.pub.dadgm.pf22.physics.PhysicsThread;
+import ro.pub.dadgm.pf22.utils.Vector3D;
 
 /**
  * Manages the game and enforces its rules.
@@ -345,6 +346,33 @@ public class Game implements Serializable {
 		smoothControl.queueCommand(plane, parameters);
 	}
 	
+	/**
+	 * Shoots a projectile from the specified plane.
+	 * 
+	 * <p>The projectile will inherit the plane's forward vector.</p>
+	 * 
+	 * @param plane The plane that fires.
+	 * @param projectileType Projectile type.
+	 */
+	public void shootProjectile(Plane plane, Projectile.ProjectileType projectileType) {
+		Projectile projectile = new Projectile(projectileType);
+		Vector3D velocity = new Vector3D(plane.getVelocity());
+		Vector3D position = new Vector3D(plane.getPosition());
+		
+		velocity.normalize();
+		// velocity.multiply();
+		position.add(velocity);
+		
+		velocity.normalize();
+		velocity.multiply(10f); // projectile's speed FIXME: should be based on projectile type
+		
+		projectile.getPosition().setCoordinates(position.getX(), position.getY(), position.getZ());
+		projectile.getVelocity().setValues(velocity.getX(), velocity.getY(), velocity.getZ());
+		
+		projectile.setOrientation(plane.getYaw(), plane.getPitch());
+		
+		world.addProjectile(projectile);
+	}
 	
 	/**
 	 * Destroys the specified plane object.
@@ -352,6 +380,8 @@ public class Game implements Serializable {
 	 * @param plane The plane to destroy.
 	 */
 	protected void destroyObject(Plane plane) {
+		if (world == null) return;
+		
 		if (plane == world.getPlayer()) {
 			// if the plane is the current player, the game is over
 			stop();
@@ -368,6 +398,8 @@ public class Game implements Serializable {
 	 * @param projectile The projectile object to destroy.
 	 */
 	protected void destroyObject(Projectile projectile) {
+		if (world == null) return;
+		
 		world.removeProjectile(projectile);
 	}
 

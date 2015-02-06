@@ -5,7 +5,7 @@
 # Normals: 953
 # Faces: 1902
 
-# mtllib materials.mtl
+# m t l l ib materials.mtl
 
 v 12.537613 -1.818212 1.049696
 v 12.537590 -1.877045 0.959582
@@ -3190,11 +3190,11 @@ vn 0.014229 0.997380 -0.070923
 vn 0.000089 0.997370 -0.072478
 vn -0.014060 0.997381 -0.070943
 
-mtllib Large_Rocket_A.mtl
+# mtllib Large_Rocket_A.mtl
 
 g Default
 s 1
-usemtl Sphere,9
+# usemtl Sphere,9
 f 3/13/3 66/227/66 69/25/69
 f 69/25/69 66/227/66 68/229/68
 f 67/228/67 73/234/73 66/14/66
