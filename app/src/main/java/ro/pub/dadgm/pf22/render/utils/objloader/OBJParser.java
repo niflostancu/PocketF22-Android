@@ -141,6 +141,7 @@ public class OBJParser {
 	private void processVTLine(String line) {
 		String[] tokens = line.split("[ ]+");
 		int c = tokens.length;
+		if (c > 3) c = 3;
 		for (int i = 1; i < c; i++) {
 			vt.add(Float.valueOf(tokens[i]));
 		}

@@ -16,7 +16,6 @@ import ro.pub.dadgm.pf22.render.utils.objloader.OBJParser;
 import ro.pub.dadgm.pf22.render.utils.objloader.TDModel;
 import ro.pub.dadgm.pf22.render.utils.objloader.TDModelPart;
 import ro.pub.dadgm.pf22.render.views.GameScene;
-import ro.pub.dadgm.pf22.utils.Vector3D;
 
 /**
  * Implements a 3D fighter jet model.
