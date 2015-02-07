@@ -28,10 +28,10 @@ varying vec3 viewDir;
 // Shader entry point
 void main()
 {
-	float lambertian = max(dot(lightDir, v_normal), 0.1);
+	float lambertian = max(dot(lightDir, v_normal), 0.0);
 	float specular = 0.0;
 	
-	if (lambertian > 0.1) {
+	if (lambertian > 0.0) {
 		vec3 reflectDir = reflect(lightDir, v_normal);
 		float specAngle = max(dot(reflectDir, viewDir), 0.0);
 		specular = pow(specAngle, u_shininess);
