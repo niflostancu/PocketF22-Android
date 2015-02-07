@@ -260,12 +260,12 @@ public class Terrain3D extends AbstractObject3D {
 					v3 = v; // current vertex is the third in the quad
 					v4 = ((i-1)*dims[1] + j);
 					// The 3-1-2 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v3+4, vertexNormals, 8*v1+4, vertexNormals, 8*v2+4);
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v3, vertexNormals, 8*v1, vertexNormals, 8*v2);
 					vertexNormals[8*v+4] += tmp[0];
 					vertexNormals[8*v+5] += tmp[1];
 					vertexNormals[8*v+6] += tmp[2];
 					// The 3-4-1 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexNormals, 3*v3+4, vertexNormals, 3*v4+4, vertexNormals, 8*v1+4);
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v3, vertexNormals, 8*v4, vertexNormals, 8*v1);
 					vertexNormals[8*v+4] += tmp[0];
 					vertexNormals[8*v+5] += tmp[1];
 					vertexNormals[8*v+6] += tmp[2];
@@ -277,7 +277,7 @@ public class Terrain3D extends AbstractObject3D {
 					v3 = ((i)*dims[1] + j+1);
 					// v4 = 0; // not important
 					// The 2-3-1 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexNormals, 3*v2+4, vertexNormals, 3*v3+4, vertexNormals, 3*v1+4);
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v2, vertexNormals, 8*v3, vertexNormals, 8*v1);
 					vertexNormals[8*v+4] += tmp[0];
 					vertexNormals[8*v+5] += tmp[1];
 					vertexNormals[8*v+6] += tmp[2];
@@ -289,7 +289,7 @@ public class Terrain3D extends AbstractObject3D {
 					v3 = ((i+1)*dims[1] + j);
 					v4 = v; // current vertex is the last in the quad
 					// The 4-1-3 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v4+4, vertexNormals, 8*v1+4, vertexNormals, 8*v3+4);
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v4, vertexNormals, 8*v1, vertexNormals, 8*v3);
 					vertexNormals[8*v+4] += tmp[0];
 					vertexNormals[8*v+5] += tmp[1];
 					vertexNormals[8*v+6] += tmp[2];
@@ -301,12 +301,12 @@ public class Terrain3D extends AbstractObject3D {
 					v3 = ((i+1)*dims[1] + j+1);
 					v4 = ((i)*dims[1] + j+1);
 					// The 1-2-3 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v1+4, vertexNormals, 8*v2+4, vertexNormals, 8*v3+4);
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v1, vertexNormals, 8*v2, vertexNormals, 8*v3);
 					vertexNormals[8*v+4] += tmp[0];
 					vertexNormals[8*v+5] += tmp[1];
 					vertexNormals[8*v+6] += tmp[2];
 					// The 1-3-4 triangle
-					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v1+4, vertexNormals, 8*v3+4, vertexNormals, 8*v4+4);
+					NormalUtils.computeNormal(tmp, 0, vertexNormals, 8*v1, vertexNormals, 8*v3, vertexNormals, 8*v4);
 					vertexNormals[8*v+4] += tmp[0];
 					vertexNormals[8*v+5] += tmp[1];
 					vertexNormals[8*v+6] += tmp[2];
